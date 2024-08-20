@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/geoffjay/cmd"
+	"github.com/geoffjay/agent/cmd"
 )
 
 func main() {

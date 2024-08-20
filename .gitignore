@@ -1,1 +1,5 @@
+.pre-commit-config.yaml
+
 .direnv/
+
+agent
