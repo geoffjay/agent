@@ -1,0 +1,14 @@
+version: "3"
+
+silent: true
+
+tasks:
+  build:
+    cmds:
+      - go build .
+  dev:
+    cmds:
+      - overmind start
+  kill:
+    cmds:
+      - overmind stop

@@ -69,5 +69,7 @@ pkgs.mkShell {
     pkgs.go-task
     pkgs.gotestsum
     pkgs.gotools
+    pkgs.ollama
+    pkgs.overmind
   ];
 }

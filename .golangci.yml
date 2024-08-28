@@ -1,0 +1,85 @@
+run:
+  tests: true
+
+output:
+  formats:
+    - format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  uniq-by-line: true
+  path-prefix: ""
+  sort-results: false
+
+linters:
+  # additional linters that aren't enabled by default
+  enable:
+    # - asciicheck
+    # - cyclop
+    # - dogsled
+    # - dupl
+    # - errorlint
+    # - exhaustive
+    # - forbidigo
+    # - funlen
+    - goconst
+    - godot
+    - gofmt
+    - goimports
+    - misspell
+    - nestif
+    - revive
+
+linters-settings:
+  cyclop:
+    max-complexity: 10
+    package-average: 0.0
+    skip-tests: false
+
+  dogsled:
+    max-blank-identifiers: 2
+
+  dupl:
+    threshold: 100
+
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+    exclude-functions:
+      - fmt:.*
+      - io/ioutil:^Read.*
+
+  errorlint:
+    errorf: true
+    asserts: true
+    comparison: true
+
+  exhaustive:
+    check-generated: false
+    default-signifies-exhaustive: false
+
+  forbidigo:
+    forbid:
+      - ^print.*$
+    exclude-godoc-examples: false
+
+  funlen:
+    lines: 60
+    statements: 40
+    ignore-comments: true
+
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+
+  godot:
+    scope: declarations
+    capital: false
+
+  gofmt:
+    simplify: true
+
+  goimports:
+    local-prefixes: github.com/geoffjay/agent
+
+  nestif:
+    min-complexity: 4
