@@ -1,0 +1,46 @@
+name: "Contribution Guidelines"
+description: "Rules for contributing code to this repository"
+
+rules:
+  - name: "Test Coverage"
+    description: "All code changes must include tests"
+    conditions:
+      - "Any changes to functionality or code must include corresponding test updates or new tests"
+      - "Tests should verify both the happy path and error handling"
+      - "Run tests locally before submitting changes to ensure they pass"
+    examples:
+      - "When adding a new feature, create tests in the corresponding *_test.go file"
+      - "When fixing a bug, add a test case that would have caught the bug"
+  
+  - name: "Documentation"
+    description: "All code changes must include documentation updates"
+    conditions:
+      - "Update or create documentation for any changes to code and functionality"
+      - "Documentation should be clear, concise, and follow Go conventions"
+      - "Include examples where appropriate"
+    examples:
+      - "Add godoc comments to exported functions, types, and constants"
+      - "Update README.md or docs/ directory for significant changes"
+      - "Include usage examples for new features"
+
+  - name: "Commit Messages"
+    description: "Write clear and descriptive commit messages"
+    conditions:
+      - "Begin with a concise summary line (50 chars or less)"
+      - "Include more detailed explanation after the summary if needed"
+      - "Reference issues or tickets where applicable"
+    examples:
+      - "feat: Add user authentication system"
+      - "fix: Correct race condition in scheduler"
+      - "docs: Update API documentation for user endpoints"
+
+  - name: "Code Style"
+    description: "Follow project code style conventions"
+    conditions:
+      - "Run gofmt or goimports before committing"
+      - "Follow Go Best Practices and Effective Go recommendations"
+      - "Ensure all linters pass"
+    examples:
+      - "Use meaningful variable and function names"
+      - "Keep functions small and focused on a single responsibility"
+      - "Run 'go vet' and address any issues" 

@@ -3,3 +3,6 @@
 .direnv/
 
 agent
+
+coverage.html
+coverage.out

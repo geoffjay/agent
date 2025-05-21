@@ -1,3 +1,15 @@
+// Package config provides functionality for loading and accessing application configuration.
+//
+// Configuration can be loaded from YAML, JSON, or TOML files, and values can be
+// overridden using environment variables with the prefix "AGENT_".
+//
+// Example usage:
+//
+//	cfg, err := config.GetConfig()
+//	if err != nil {
+//		log.Fatalf("Failed to load config: %v", err)
+//	}
+//	fmt.Println("Agent name:", cfg.Name)
 package config
 
 import (
@@ -13,12 +25,19 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config represents the application configuration structure.
+// Add new configuration fields to this struct as needed.
 type Config struct {
+	// Name is the name of the agent.
 	Name string `mapstructure:"name"`
 }
 
+// Environment variable prefix used for configuration overrides.
 const envPrefix = "AGENT"
 
+// prepare initializes a viper configuration instance for the given filename.
+// It determines the file type from the extension and configures viper accordingly.
+// Supported extensions are: yaml, yml, json, and toml.
 func prepare(filename string) (*viper.Viper, error) {
 	config := viper.New()
 
@@ -45,6 +64,15 @@ func prepare(filename string) (*viper.Viper, error) {
 
 // LoadConfig reads in a configuration file from a set of locations and
 // deserializes it into a Config instance.
+//
+// The function accepts the following parameters:
+//   - filename: The path to the configuration file.
+//   - c: A pointer to the struct that will be populated with the configuration values.
+//
+// Environment variables with the prefix "AGENT_" can override configuration values.
+// For example, AGENT_NAME will override the "name" configuration value.
+//
+// Returns an error if the configuration cannot be loaded or parsed.
 func LoadConfig(filename string, c interface{}) error {
 	config, err := prepare(filename)
 	if err != nil {
@@ -69,6 +97,13 @@ func LoadConfig(filename string, c interface{}) error {
 }
 
 // GetConfig returns the application configuration.
+//
+// By default, it looks for a file named "Agentfile.yml" in the current directory.
+// This can be overridden by setting the AGENTFILE environment variable.
+//
+// Returns:
+//   - A pointer to the Config struct containing the loaded configuration.
+//   - An error if the configuration file doesn't exist or cannot be loaded.
 func GetConfig() (*Config, error) {
 	var config *Config
 

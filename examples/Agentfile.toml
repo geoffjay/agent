@@ -1,0 +1,6 @@
+# Example Agent Configuration File in TOML format
+
+# The name of the agent (required)
+name = "MyAgent"
+
+# Add more configuration options here as the application evolves 
