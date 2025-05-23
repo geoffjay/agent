@@ -45,6 +45,21 @@ function M.connect(callback)
     -- Start reading from the socket
     state.socket:read_start(M.on_read)
     
+    -- Send client identification
+    local identify_msg = {
+      id = 1,
+      type = "identify",
+      content = {
+        client_type = "nvim"
+      }
+    }
+    
+    -- Send identification message
+    local success, encoded = pcall(msgpack.encode, identify_msg)
+    if success then
+      state.socket:write(encoded)
+    end
+    
     if callback then callback(true) end
   end)
 end
@@ -150,6 +165,23 @@ function M.handle_notification(message)
   elseif message.type == "log" then
     local level = vim.log.levels[string.upper(message.level or "INFO")] or vim.log.levels.INFO
     vim.notify(message.content or "", level)
+  elseif message.type == "chat" then
+    -- Handle chat messages from the chat TUI
+    local content = ""
+    if type(message.content) == "table" and message.content.content then
+      content = message.content.content
+    elseif type(message.content) == "string" then
+      content = message.content
+    else
+      content = vim.inspect(message.content)
+    end
+    
+    vim.schedule(function()
+      vim.notify("💬 Chat: " .. content, vim.log.levels.INFO, {
+        title = "Agent Chat",
+        timeout = 5000,
+      })
+    end)
   end
 end
 

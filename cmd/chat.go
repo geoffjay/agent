@@ -101,6 +101,23 @@ func (m chatModel) connectToAgent() tea.Cmd {
 		if err != nil {
 			return connectionErrorMsg{err}
 		}
+
+		// Send client identification
+		identifyMsg := message{
+			ID:   1,
+			Type: "identify",
+			Content: map[string]interface{}{
+				"client_type": "chat",
+			},
+		}
+
+		encoder := msgpack.NewEncoder(conn)
+		err = encoder.Encode(identifyMsg)
+		if err != nil {
+			conn.Close()
+			return connectionErrorMsg{err}
+		}
+
 		return connectionSuccessMsg{conn}
 	}
 }
@@ -227,6 +244,13 @@ func (m chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m *chatModel) handleAgentResponse(response message) {
 	switch response.Type {
+	case "ack":
+		// Acknowledgment from the service
+		if contentMap, ok := response.Content.(map[string]interface{}); ok {
+			if message, ok := contentMap["message"].(string); ok {
+				m.messages = append(m.messages, statusStyle.Render("✓ "+message))
+			}
+		}
 	case "message":
 		if contentMap, ok := response.Content.(map[string]interface{}); ok {
 			if content, ok := contentMap["content"].(string); ok {
@@ -246,6 +270,14 @@ func (m *chatModel) handleAgentResponse(response message) {
 			if content, ok := contentMap["content"].(string); ok {
 				m.messages = append(m.messages, errorStyle.Render("❌ Error: "+content))
 			}
+		}
+	case "buffer", "selection":
+		// Messages from neovim - display them as info
+		m.messages = append(m.messages, statusStyle.Render("📝 Received code from Neovim"))
+	case "status_response":
+		// Display service status
+		if data, err := json.MarshalIndent(response.Content, "", "  "); err == nil {
+			m.messages = append(m.messages, messageStyle.Render("📊 Service Status:\n"+string(data)))
 		}
 	default:
 		// Try to display as JSON for debugging
