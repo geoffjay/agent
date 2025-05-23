@@ -6,6 +6,11 @@ categories:
   - terminal-ui
   - agent-communication
   - go-development
+provenance:
+  repo: "https://github.com/geoffjay/agent"
+  commit: "4c6b2a49bc65ad2b06ef404679615d2a12b59816"
+  prompt: "4c6b2a49bc65ad2b06ef404679615d2a12b59816"
+  modifications: []
 ---
 
 What happens when you need to build a bridge between a terminal user and an AI agent running in Neovim? You get to experience the delightful world of terminal user interfaces (TUIs), socket programming, and the surprisingly satisfying challenge of making MessagePack play nicely with bubbletea. 
@@ -205,4 +210,8 @@ Building the agent chat TUI reinforced some fundamental truths about good softwa
 
 The agent chat interface demonstrates that terminal applications can be both powerful and pleasant to use. It's a bridge between human creativity and AI capability, packaged in a form that feels natural to developers who live in terminals.
 
-Now if we could just get the agent to understand why we always name our variables `foo` and `bar`... 🤖 
+Now if we could just get the agent to understand why we always name our variables `foo` and `bar`... 🤖
+
+---
+
+*This article was originally created in commit [`4c6b2a49bc65ad2b06ef404679615d2a12b59816`](https://github.com/geoffjay/agent/commit/4c6b2a49bc65ad2b06ef404679615d2a12b59816), prompted by commit [`4c6b2a49bc65ad2b06ef404679615d2a12b59816`](https://github.com/geoffjay/agent/commit/4c6b2a49bc65ad2b06ef404679615d2a12b59816).*
