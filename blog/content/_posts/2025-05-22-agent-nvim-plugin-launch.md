@@ -6,6 +6,11 @@ categories:
   - neovim
   - ai-agents
   - plugin-development
+provenance:
+  repo: "https://github.com/geoffjay/agent"
+  commit: "30fd7b71b27bfa1e9e92ee480c798629aaa18893"
+  prompt: "30fd7b71b27bfa1e9e92ee480c798629aaa18893"
+  modifications: []
 ---
 
 The future of coding isn't just about writing better code—it's about seamlessly collaborating with AI agents that can understand, modify, and enhance our work in real-time. Today, we're launching **agent.nvim**, a Neovim plugin that transforms your editor into a bidirectional communication hub with autonomous agents.
@@ -153,4 +158,8 @@ The best part? This is open source. The plugin, the documentation, and the visio
 
 Ready to give it a try? Check out the [repository](https://github.com/geoffjay/agent.nvim) and start building with your new AI coding companion. Who knows? You might find that the most productive pair programming session you've ever had is with an agent that never needs to step away for lunch.
 
-*Now, if only we could get the agents to write their own commit messages... 🤔* 
+*Now, if only we could get the agents to write their own commit messages... 🤔*
+
+---
+
+*This article was originally created in commit [`30fd7b71b27bfa1e9e92ee480c798629aaa18893`](https://github.com/geoffjay/agent/commit/30fd7b71b27bfa1e9e92ee480c798629aaa18893), prompted by commit [`30fd7b71b27bfa1e9e92ee480c798629aaa18893`](https://github.com/geoffjay/agent/commit/30fd7b71b27bfa1e9e92ee480c798629aaa18893).* 
