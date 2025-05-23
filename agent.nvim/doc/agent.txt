@@ -1,0 +1,277 @@
+*agent.nvim* *agent*
+
+A Neovim plugin for seamless integration with autonomous agent services
+
+==============================================================================
+CONTENTS                                                      *agent-contents*
+
+    1. Introduction .................. |agent-introduction|
+    2. Installation .................. |agent-installation|
+    3. Configuration ................. |agent-configuration|
+    4. Commands ...................... |agent-commands|
+    5. Functions ..................... |agent-functions|
+    6. Mappings ...................... |agent-mappings|
+    7. API ........................... |agent-api|
+    8. Troubleshooting ............... |agent-troubleshooting|
+
+==============================================================================
+INTRODUCTION                                              *agent-introduction*
+
+agent.nvim provides seamless integration with autonomous agent services through
+TCP socket communication. The plugin enables agents to execute tasks, make
+code edits, and interact with your Neovim environment in real-time.
+
+Key features:
+- Socket communication with msgpack serialization
+- Real-time agent integration
+- Chat interface support
+- Task execution with xit format support
+- Floating UI for status and information
+- Configurable keybindings
+
+Requirements:
+- Neovim >= 0.8.0
+- Agent service running on TCP socket
+
+==============================================================================
+INSTALLATION                                              *agent-installation*
+
+Using lazy.nvim: >
+    {
+      "your-username/agent.nvim",
+      config = function()
+        require("agent").setup()
+      end,
+      cmd = { "Agent", "AgentStart", "AgentStop", "AgentStatus", "AgentToggle" },
+    }
+<
+
+Using packer.nvim: >
+    use {
+      "your-username/agent.nvim",
+      config = function()
+        require("agent").setup()
+      end
+    }
+<
+
+Manual installation: >
+    git clone https://github.com/your-username/agent.nvim \
+      ~/.config/nvim/pack/plugins/start/agent.nvim
+<
+
+==============================================================================
+CONFIGURATION                                            *agent-configuration*
+
+The plugin can be configured by passing options to the setup function: >
+    require("agent").setup({
+      socket = {
+        host = "127.0.0.1",
+        port = 7070,
+        timeout = 5000,
+      },
+      keymaps = {
+        toggle_agent = "<leader>at",
+        send_message = "<leader>as",
+        show_status = "<leader>ai",
+        clear_messages = "<leader>ac",
+      },
+      ui = {
+        border = "rounded",
+        width = 80,
+        height = 20,
+      },
+      agent = {
+        auto_start = false,
+        debug = false,
+      },
+    })
+<
+
+Configuration options:
+
+socket.host                                              *agent-config-host*
+    Default: "127.0.0.1"
+    Hostname or IP address of the agent service.
+
+socket.port                                              *agent-config-port*
+    Default: 7070
+    Port number of the agent service.
+
+socket.timeout                                        *agent-config-timeout*
+    Default: 5000
+    Connection timeout in milliseconds.
+
+keymaps.*                                             *agent-config-keymaps*
+    Default keybindings for plugin functions. Set to `false` to disable.
+
+ui.border                                              *agent-config-border*
+    Default: "rounded"
+    Border style for floating windows: "rounded", "single", "double", "none"
+
+ui.width                                                *agent-config-width*
+    Default: 80
+    Default width for floating windows.
+
+ui.height                                              *agent-config-height*
+    Default: 20
+    Default height for floating windows.
+
+agent.auto_start                                    *agent-config-auto-start*
+    Default: false
+    Automatically connect to agent service on startup.
+
+agent.debug                                            *agent-config-debug*
+    Default: false
+    Enable debug logging.
+
+==============================================================================
+COMMANDS                                                      *agent-commands*
+
+:Agent [action]                                                       *:Agent*
+    Main command interface. Without arguments, shows status.
+    Actions: start, stop, status, toggle
+
+:AgentStart                                                      *:AgentStart*
+    Connect to the agent service.
+
+:AgentStop                                                        *:AgentStop*
+    Disconnect from the agent service.
+
+:AgentStatus                                                    *:AgentStatus*
+    Show current agent status and connection information.
+
+:AgentToggle                                                    *:AgentToggle*
+    Toggle agent connection state.
+
+:AgentClear                                                      *:AgentClear*
+    Clear agent message history.
+
+==============================================================================
+FUNCTIONS                                                    *agent-functions*
+
+agent.setup({config})                                          *agent.setup()*
+    Initialize the plugin with given configuration.
+    Parameters: ~
+        {config} (table) Configuration options
+
+agent.start()                                                  *agent.start()*
+    Connect to the agent service.
+
+agent.stop()                                                    *agent.stop()*
+    Disconnect from the agent service.
+
+agent.toggle()                                                *agent.toggle()*
+    Toggle agent connection state.
+
+agent.send_current_buffer()                        *agent.send_current_buffer()*
+    Send current buffer content to the agent.
+
+agent.send_selection()                                *agent.send_selection()*
+    Send visual selection to the agent.
+
+agent.send_message({message})                            *agent.send_message()*
+    Send custom message to the agent.
+    Parameters: ~
+        {message} (table) Message data
+
+agent.show_status()                                      *agent.show_status()*
+    Display agent status in floating window.
+
+agent.clear_messages()                                *agent.clear_messages()*
+    Clear agent message history.
+
+agent.get_state()                                          *agent.get_state()*
+    Get internal plugin state (for debugging).
+
+==============================================================================
+MAPPINGS                                                      *agent-mappings*
+
+Default mappings (configurable):
+
+<leader>at    Toggle agent connection               *agent-mapping-toggle*
+<leader>as    Send buffer/selection to agent       *agent-mapping-send*
+<leader>ai    Show agent status                    *agent-mapping-status*
+<leader>ac    Clear agent messages                 *agent-mapping-clear*
+
+In visual mode:
+<leader>as    Send visual selection to agent
+
+==============================================================================
+API                                                                *agent-api*
+
+Message Format                                           *agent-message-format*
+
+Outgoing messages to agent: >
+    {
+      id = 123,                    -- Auto-generated message ID
+      type = "buffer",             -- Message type
+      filename = "/path/to/file",  -- File being sent
+      content = "code content",    -- File/selection content
+      cursor_pos = {10, 5},       -- Cursor position [line, col]
+    }
+<
+
+Incoming responses from agent: >
+    {
+      id = 123,                    -- Matching message ID
+      type = "edit",               -- Response type
+      filename = "/path/to/file",  -- File to edit
+      content = "new content",     -- New file content
+      save = true,                 -- Whether to save after edit
+    }
+<
+
+Message Types                                             *agent-message-types*
+
+Outgoing:
+- "buffer"     Complete buffer content with metadata
+- "selection"  Visual selection with position information
+
+Incoming:
+- "edit"       Code changes to apply to files
+- "message"    Informational messages to display
+- "error"      Error notifications
+- "notification" Unsolicited messages from agent
+
+==============================================================================
+TROUBLESHOOTING                                      *agent-troubleshooting*
+
+Connection Issues                                   *agent-connection-issues*
+
+Agent service not running:
+    Ensure your agent service is running on the configured host/port.
+
+Port conflicts:
+    Check if another service is using the configured port.
+
+Firewall issues:
+    Ensure localhost connections are allowed.
+
+Message Issues                                         *agent-message-issues*
+
+Encoding errors:
+    Check if your agent service supports msgpack or JSON fallback.
+
+Large messages:
+    Very large buffers might timeout. Consider sending selections instead.
+
+Invalid responses:
+    Check agent service logs for response format issues.
+
+Debug Mode                                                 *agent-debug-mode*
+
+Enable debug logging: >
+    require("agent").setup({
+      agent = {
+        debug = true,
+      },
+    })
+<
+
+Check Neovim messages: >
+    :messages
+<
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl: 
