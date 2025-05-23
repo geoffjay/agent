@@ -2,5 +2,7 @@
 
 .direnv/
 
+/build/agent
+
 coverage.html
 coverage.out
