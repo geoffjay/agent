@@ -6,6 +6,11 @@ categories:
   - development
   - tooling
   - ai-integration
+provenance:
+  repo: "https://github.com/geoffjay/agent"
+  commit: "57a4043b9cd9baf98369d75272b6e161537eab18"
+  prompt: "e29b4f3ee3e06e68e9ed908ab1e28ef1a6a94f66"
+  modifications: []
 ---
 
 When building complex software systems, one of the biggest challenges teams face is maintaining consistency across processes, code style, and decision-making. We've all been there – onboarding new team members who ask "How do we do X here?" or finding ourselves repeating the same procedural explanations in code reviews. What if there was a better way to capture, organize, and access all that institutional knowledge?
@@ -91,4 +96,8 @@ The beauty of a well-designed guidance system is that it grows with your team, b
 
 We're excited to see how this system evolves and how it transforms our development practices. After all, the best tools are the ones that make you wonder how you ever worked without them – and we have a feeling `gydnc` is going to be one of those tools.
 
-*Ready to level up your team's development workflow? The future of systematic, guidance-driven development starts here! 🌟* 
+*Ready to level up your team's development workflow? The future of systematic, guidance-driven development starts here! 🌟*
+
+---
+
+*This article was originally created in commit [`57a4043b9cd9baf98369d75272b6e161537eab18`](https://github.com/geoffjay/agent/commit/57a4043b9cd9baf98369d75272b6e161537eab18), prompted by commit [`e29b4f3ee3e06e68e9ed908ab1e28ef1a6a94f66`](https://github.com/geoffjay/agent/commit/e29b4f3ee3e06e68e9ed908ab1e28ef1a6a94f66).* 
