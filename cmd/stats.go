@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -11,8 +10,8 @@ var statsCmd = &cobra.Command{
 	Short: "Show statistics of running agents",
 	Long:  `Display performance and usage statistics for running agents.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Gathering agent statistics...")
-		fmt.Println("Agent statistics functionality will be implemented in future work.")
+		log.Info("Gathering agent statistics...\n")
+		log.Info("Agent statistics functionality will be implemented in future work.\n")
 	},
 }
 

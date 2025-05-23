@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
 	"github.com/geoffjay/agent/core"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +18,7 @@ var runCmd = &cobra.Command{
 	Short: "Start the agent as a daemonized service",
 	Long:  `Start the agent process that runs in the background as a service.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Starting agent service...")
+		log.Info("Starting agent service...\n")
 		runAgent()
 	},
 }
@@ -33,16 +34,16 @@ func runAgent() {
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)
-	agent.Run(ctx, wg)
+	go agent.Run(ctx, wg)
 
-	fmt.Println("Agent service is running. Press Ctrl+C to stop.")
+	log.Info("Agent service is running. Press Ctrl+C to stop.\n")
 
 	termChan := make(chan os.Signal, 1)
 	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
 	<-termChan
 
-	fmt.Println("\nShutting down agent service...")
+	log.Info("Shutting down agent service...\n")
 	cancelFunc()
 	wg.Wait()
-	fmt.Println("Agent service stopped.")
+	log.Info("Agent service stopped.")
 }
