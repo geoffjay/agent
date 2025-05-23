@@ -12,11 +12,13 @@ alwaysApply: true
 # Guidance Agent Interaction Framework
 
 ## Intent
+
 Ensure effective guidance retrieval and creation through the gydnc CLI tool, adapting to evolving user requests throughout a session.
 
 ## Rules
 
 ### 1. Guidance Retrieval Workflow
+
 ALWAYS follow this sequence to ensure you have comprehensive guidance:
 
 1. **BEGIN WITH OVERVIEW:** Start EVERY session by getting a complete overview of available guidance:
@@ -44,6 +46,7 @@ ALWAYS follow this sequence to ensure you have comprehensive guidance:
     It is CRITICAL to adapt and fetch new guidance as the conversation progresses.
 
 ### 2. Guidance Creation Workflow
+
 When creating new guidance entities:
 
 1. **CAPTURE EXISTING CONTENT:** Use stdin piping to create guidance from existing content:
@@ -66,6 +69,7 @@ When creating new guidance entities:
     ```
 
 ### 3. Adaptive Guidance Retrieval
+
 As the user's needs evolve during a conversation:
 
 1. **CONTINUOUS MONITORING:** Constantly evaluate if new guidance is needed based on:
@@ -107,6 +111,7 @@ As the user's needs evolve during a conversation:
     ```
 
 ## Notes
+
 - The full guidance content is critical for understanding context and requirements
 - Never rely solely on the overview - always retrieve full guidance with `gydnc get`
 - As user requests evolve (e.g., "write a blog about this"), retrieve appropriate additional guidance

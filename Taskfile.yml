@@ -5,7 +5,7 @@ silent: true
 tasks:
   build:
     cmds:
-      - go build .
+      - go build . -o build/agent
   dev:
     cmds:
       - overmind start
