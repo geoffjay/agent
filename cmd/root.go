@@ -16,7 +16,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:   "agent",
-	Short: "Agent is a helpful coder buddy",
+	Short: "Agent is used to launch and interact with autonomous agents",
 	Run:   runAgent,
 }
 

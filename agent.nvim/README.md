@@ -23,7 +23,7 @@ A Neovim plugin that provides seamless integration with autonomous agent service
 
 ```lua
 {
-  "your-username/agent.nvim",
+  "geoffjay/agent.nvim",
   config = function()
     require("agent").setup({
       -- your configuration here
@@ -44,7 +44,7 @@ A Neovim plugin that provides seamless integration with autonomous agent service
 
 ```lua
 use {
-  "your-username/agent.nvim",
+  "geoffjay/agent.nvim",
   config = function()
     require("agent").setup()
   end
@@ -55,7 +55,7 @@ use {
 
 1. Clone this repository to your Neovim configuration directory:
    ```bash
-   git clone https://github.com/your-username/agent.nvim ~/.config/nvim/pack/plugins/start/agent.nvim
+   git clone https://github.com/geoffjay/agent.nvim ~/.config/nvim/pack/plugins/start/agent.nvim
    ```
 
 2. Add to your `init.lua`:
@@ -240,8 +240,8 @@ MIT License - see LICENSE file for details
 
 ## Related Projects
 
-- [agent](https://github.com/your-username/agent) - The autonomous agent service
-- [xit](https://github.com/your-username/xit) - Task list format used by agents
+- [agent](https://github.com/geoffjay/agent) - The autonomous agent service
+- [xit](https://github.com/jotaen/xit) - Task list format used by agents
 
 ## Support
 
