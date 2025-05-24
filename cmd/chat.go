@@ -111,8 +111,23 @@ func (m chatModel) connectToAgent() tea.Cmd {
 			},
 		}
 
-		encoder := msgpack.NewEncoder(conn)
-		err = encoder.Encode(identifyMsg)
+		data, err := msgpack.Marshal(identifyMsg)
+		if err != nil {
+			conn.Close()
+			return connectionErrorMsg{err}
+		}
+
+		// Send with 4-byte length prefix for framing (big-endian)
+		length := uint32(len(data))
+		lengthBytes := make([]byte, 4)
+		lengthBytes[0] = byte(length >> 24)
+		lengthBytes[1] = byte(length >> 16)
+		lengthBytes[2] = byte(length >> 8)
+		lengthBytes[3] = byte(length)
+
+		// Write length prefix + data as one write to ensure atomicity
+		frame := append(lengthBytes, data...)
+		_, err = conn.Write(frame)
 		if err != nil {
 			conn.Close()
 			return connectionErrorMsg{err}
@@ -163,7 +178,17 @@ func (m *chatModel) sendMessage(content string) tea.Cmd {
 			return connectionErrorMsg{err}
 		}
 
-		_, err = m.conn.Write(data)
+		// Send with 4-byte length prefix for framing (big-endian)
+		length := uint32(len(data))
+		lengthBytes := make([]byte, 4)
+		lengthBytes[0] = byte(length >> 24)
+		lengthBytes[1] = byte(length >> 16)
+		lengthBytes[2] = byte(length >> 8)
+		lengthBytes[3] = byte(length)
+
+		// Write length prefix + data as one write to ensure atomicity
+		frame := append(lengthBytes, data...)
+		_, err = m.conn.Write(frame)
 		if err != nil {
 			return connectionErrorMsg{err}
 		}
@@ -189,7 +214,9 @@ func (m chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.connected && strings.TrimSpace(m.textarea.Value()) != "" {
 				userMsg := strings.TrimSpace(m.textarea.Value())
 				m.messages = append(m.messages, userMessageStyle.Render("You: ")+userMsg)
-				m.updateViewport()
+				if m.ready {
+					m.updateViewport()
+				}
 				m.textarea.Reset()
 				cmd := m.sendMessage(userMsg)
 				cmds = append(cmds, cmd)
@@ -200,24 +227,45 @@ func (m chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !m.ready {
 			m.width = msg.Width
 			m.height = msg.Height
-			m.viewport.Width = msg.Width - 4
-			m.viewport.Height = msg.Height - 8
-			m.textarea.SetWidth(msg.Width - 4)
+
+			// Ensure minimum dimensions to prevent negative viewport sizes
+			viewportWidth := msg.Width - 4
+			if viewportWidth < 10 {
+				viewportWidth = 10
+			}
+
+			viewportHeight := msg.Height - 8
+			if viewportHeight < 5 {
+				viewportHeight = 5
+			}
+
+			m.viewport.Width = viewportWidth
+			m.viewport.Height = viewportHeight
+			m.textarea.SetWidth(viewportWidth)
 			m.ready = true
+
+			// Update viewport with any pending messages now that it's ready
+			if len(m.messages) > 0 {
+				m.updateViewport()
+			}
 		}
 
 	case connectionSuccessMsg:
 		m.conn = msg.conn
 		m.connected = true
 		m.messages = append(m.messages, statusStyle.Render("✓ Connected to agent.nvim plugin"))
-		m.updateViewport()
+		if m.ready {
+			m.updateViewport()
+		}
 		cmds = append(cmds, m.listenForResponses())
 
 	case connectionErrorMsg:
 		m.connected = false
 		m.err = msg.err
 		m.messages = append(m.messages, errorStyle.Render("✗ Connection error: "+msg.err.Error()))
-		m.updateViewport()
+		if m.ready {
+			m.updateViewport()
+		}
 		// Try to reconnect after a delay
 		cmds = append(cmds, tea.Tick(time.Second*5, func(t time.Time) tea.Msg {
 			return m.connectToAgent()()
@@ -226,7 +274,9 @@ func (m chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case agentResponseMsg:
 		// Handle response from agent
 		m.handleAgentResponse(msg.response)
-		m.updateViewport()
+		if m.ready {
+			m.updateViewport()
+		}
 		// Continue listening for more responses
 		cmds = append(cmds, m.listenForResponses())
 	}
@@ -288,6 +338,9 @@ func (m *chatModel) handleAgentResponse(response message) {
 }
 
 func (m *chatModel) updateViewport() {
+	if !m.ready {
+		return // Don't update viewport until it's properly initialized
+	}
 	content := strings.Join(m.messages, "\n")
 	m.viewport.SetContent(content)
 	m.viewport.GotoBottom()

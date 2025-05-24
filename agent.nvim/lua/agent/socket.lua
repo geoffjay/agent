@@ -1,7 +1,7 @@
 local M = {}
 
 local uv = vim.loop
-local msgpack = require("agent.msgpack")
+local msgpack = require("agent.framed_msgpack")
 
 -- Socket state
 local state = {
@@ -10,6 +10,7 @@ local state = {
   connected = false,
   callbacks = {},
   message_id = 0,
+  buffer = "", -- TCP stream buffer for handling partial frames
 }
 
 -- Setup socket configuration
@@ -36,29 +37,59 @@ function M.connect(callback)
   state.socket:connect(state.config.host, state.config.port, function(err)
     if err then
       state.connected = false
+      vim.schedule(function()
+        vim.notify("Socket connection failed: " .. err, vim.log.levels.ERROR)
+      end)
       if callback then callback(false, err) end
       return
     end
+    
+    vim.schedule(function()
+      vim.notify("Socket connected successfully to " .. state.config.host .. ":" .. state.config.port, vim.log.levels.INFO)
+    end)
     
     state.connected = true
     
     -- Start reading from the socket
     state.socket:read_start(M.on_read)
     
-    -- Send client identification
-    local identify_msg = {
-      id = 1,
-      type = "identify",
-      content = {
-        client_type = "nvim"
+    -- Send client identification (with small delay to ensure connection is ready)
+    vim.defer_fn(function()
+      local identify_msg = {
+        id = 1,
+        type = "identify",
+        content = {
+          client_type = "nvim"
+        }
       }
-    }
-    
-    -- Send identification message
-    local success, encoded = pcall(msgpack.encode, identify_msg)
-    if success then
-      state.socket:write(encoded)
-    end
+      
+      -- Send identification message
+      vim.schedule(function()
+        vim.notify("MessagePack available: " .. tostring(msgpack.is_native()), vim.log.levels.INFO)
+        vim.notify("Encoding message: " .. vim.inspect(identify_msg), vim.log.levels.INFO)
+      end)
+      
+      local success, encoded = pcall(msgpack.encode, identify_msg)
+      if success then
+        vim.schedule(function()
+          vim.notify("Sending identification message: " .. vim.inspect(identify_msg), vim.log.levels.INFO)
+        end)
+        state.socket:write(encoded, function(err)
+          vim.schedule(function()
+            if err then
+              vim.notify("Failed to send identification: " .. err, vim.log.levels.ERROR)
+            else
+              vim.notify("Identification message sent successfully (" .. #encoded .. " bytes)", vim.log.levels.INFO)
+            end
+          end)
+        end)
+      else
+        vim.schedule(function()
+          vim.notify("Failed to encode identification message: " .. tostring(encoded), vim.log.levels.ERROR)
+          vim.notify("Message was: " .. vim.inspect(identify_msg), vim.log.levels.ERROR)
+        end)
+      end
+    end, 100) -- 100ms delay
     
     if callback then callback(true) end
   end)
@@ -74,6 +105,7 @@ function M.disconnect()
   state.socket = nil
   state.connected = false
   state.callbacks = {}
+  state.buffer = "" -- Clear the TCP buffer
 end
 
 -- Send message to the agent
@@ -127,19 +159,39 @@ function M.on_read(err, data)
     return
   end
   
-  -- Decode msgpack data
-  local success, decoded = pcall(msgpack.decode, data)
-  if not success then
-    vim.schedule(function()
-      vim.notify("Failed to decode message: " .. decoded, vim.log.levels.ERROR)
-    end)
-    return
-  end
+  -- Accumulate data in buffer
+  state.buffer = state.buffer .. data
   
-  -- Handle the response
-  vim.schedule(function()
-    M.handle_response(decoded)
-  end)
+  -- Process complete frames from buffer
+  while #state.buffer >= 4 do
+    -- Read frame length (big-endian 4 bytes)
+    local length = string.unpack(">I4", state.buffer, 1)
+    
+    -- Check if we have the complete frame
+    if #state.buffer < 4 + length then
+      -- Need more data for complete frame
+      break
+    end
+    
+    -- Extract the frame data
+    local frame_data = string.sub(state.buffer, 5, 4 + length)
+    
+    -- Remove processed frame from buffer
+    state.buffer = string.sub(state.buffer, 5 + length)
+    
+    -- Decode the frame
+    local success, decoded = pcall(msgpack.unpack, frame_data)
+    if success then
+      -- Handle the response
+      vim.schedule(function()
+        M.handle_response(decoded)
+      end)
+    else
+      vim.schedule(function()
+        vim.notify("Failed to decode framed message: " .. decoded, vim.log.levels.ERROR)
+      end)
+    end
+  end
 end
 
 -- Handle response from agent
@@ -159,6 +211,12 @@ end
 
 -- Handle unsolicited messages/notifications
 function M.handle_notification(message)
+  -- Record the message for tracking
+  local agent = require("agent")
+  if agent and agent.record_message then
+    agent.record_message(message, "notification")
+  end
+  
   -- This could be extended to handle different types of notifications
   if message.type == "notification" then
     vim.notify(message.content or "Agent notification", vim.log.levels.INFO)

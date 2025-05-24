@@ -48,8 +48,7 @@ echo "3. Send messages between them!"
 echo
 echo "The service will route messages between the chat interface and neovim."
 echo
-echo "Service status can be checked with: curl http://localhost:7070/status"
-echo "Or by sending a 'status' message from the chat interface."
+echo "Service status can be checked by sending a 'status' message from the chat interface."
 echo
 echo "Press Enter to stop the service..."
 read

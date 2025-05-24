@@ -8,7 +8,13 @@ This guide walks through testing the complete message flow between the chat TUI 
 
 1. **Start the Agent Service**
    ```bash
+   # For normal operation:
    ./agent serve
+   
+   # For debugging message flow:
+   ./agent serve --verbose
+   # OR use the debug script:
+   ./scripts/debug-message-flow.sh
    ```
    You should see: `Agent service listening on 127.0.0.1:7070`
 
@@ -62,6 +68,8 @@ This guide walks through testing the complete message flow between the chat TUI 
 1. Type: `status`
 2. Press `Ctrl+S`
 
+**Note:** The service uses TCP sockets with MessagePack protocol, not HTTP. Do not use `curl` commands.
+
 You should see JSON status showing connected clients:
 ```json
 📊 Service Status:
@@ -109,12 +117,28 @@ DEBU[...] Sent message to 127.0.0.1:xxxxx: type=chat, id=1
 DEBU[...] Sent message to 127.0.0.1:xxxxx: type=ack, id=1
 ```
 
+## Debug Logging
+
+When running with `--verbose` flag, you'll see detailed logs like:
+```
+DEBU[...] Client 127.0.0.1:xxxxx identified as: chat
+DEBU[...] Received message from 127.0.0.1:xxxxx (chat): type=chat, content=map[content:Hello!]
+DEBU[...] Routing message: type=chat, from=127.0.0.1:xxxxx (chat)
+DEBU[...] Routing chat message to nvim clients
+DEBU[...] Routing to nvim clients: found 1 targets
+DEBU[...] Sending message to nvim client 127.0.0.1:yyyyy
+DEBU[...] Sent message to 127.0.0.1:yyyyy: type=chat, id=1
+```
+
+This helps diagnose where messages are getting stuck in the routing process.
+
 ## Troubleshooting
 
 ### Chat messages not showing in Neovim
 - Ensure you've updated the neovim plugin code (restart neovim or `:source %`)
 - Check that the plugin shows "💬 Chat:" notifications
 - Verify the service shows both clients as connected
+- Check that `:AgentStatus` shows incrementing message counts after receiving chat messages
 
 ### Neovim messages not showing in Chat
 - Ensure you're using `:AgentReply` command (not the old direct send)

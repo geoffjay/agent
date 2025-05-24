@@ -263,6 +263,15 @@ function M.handle_response(response)
   end
 end
 
+-- Record incoming message (for tracking purposes)
+function M.record_message(message, message_type)
+  table.insert(state.messages, {
+    timestamp = os.time(),
+    type = message_type or "incoming",
+    data = message,
+  })
+end
+
 -- Apply edit from agent
 function M.apply_edit(edit_data)
   if not edit_data.filename or not edit_data.content then
