@@ -114,6 +114,11 @@ function M.setup_commands()
   vim.api.nvim_create_user_command("AgentStatus", M.show_status, { desc = "Show agent status" })
   vim.api.nvim_create_user_command("AgentToggle", M.toggle, { desc = "Toggle agent connection" })
   vim.api.nvim_create_user_command("AgentClear", M.clear_messages, { desc = "Clear agent messages" })
+  vim.api.nvim_create_user_command("AgentSendBuffer", M.send_current_buffer, { desc = "Send current buffer to agent" })
+  vim.api.nvim_create_user_command("AgentSendSelection", M.send_selection, { desc = "Send visual selection to agent" })
+  vim.api.nvim_create_user_command("AgentReply", function(opts)
+    M.send_chat_response(opts.args)
+  end, { nargs = "+", desc = "Send a message to the chat interface" })
 end
 
 -- Start the agent connection
@@ -207,6 +212,24 @@ function M.send_selection()
   })
 end
 
+-- Send response message to chat interface
+function M.send_chat_response(message)
+  if not state.connected then
+    utils.notify("Agent is not connected", vim.log.levels.WARN)
+    return
+  end
+  
+  M.send_message({
+    type = "message",
+    content = {
+      content = message,
+      source = "neovim"
+    },
+  })
+  
+  utils.notify("Sent response to chat: " .. message, vim.log.levels.INFO)
+end
+
 -- Send message to agent
 function M.send_message(message)
   if not state.connected then
@@ -238,6 +261,15 @@ function M.handle_response(response)
   elseif response.type == "error" then
     utils.notify(response.content, vim.log.levels.ERROR)
   end
+end
+
+-- Record incoming message (for tracking purposes)
+function M.record_message(message, message_type)
+  table.insert(state.messages, {
+    timestamp = os.time(),
+    type = message_type or "incoming",
+    data = message,
+  })
 end
 
 -- Apply edit from agent

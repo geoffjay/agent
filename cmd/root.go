@@ -1,52 +1,21 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
 	"os"
-	"os/signal"
-	"sync"
-	"syscall"
-	"time"
 
-	"github.com/geoffjay/agent/core"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "agent",
 	Short: "Agent is used to launch and interact with autonomous agents",
-	Run:   runAgent,
+	Long:  `Agent is a CLI tool for managing autonomous agents. Use the subcommands to initialize, run, and manage agents.`,
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Error(err)
 		os.Exit(1)
 	}
-}
-
-func runAgent(_ *cobra.Command, _ []string) {
-	agent := core.Agent{}
-
-	ctx, cancelFunc := context.WithCancel(context.Background())
-	wg := &sync.WaitGroup{}
-
-	wg.Add(1)
-	agent.Run(ctx, wg)
-
-	go func() {
-		for {
-			fmt.Println("Hello, world!")
-			<-time.After(1 * time.Second)
-		}
-	}()
-
-	termChan := make(chan os.Signal, 1)
-	signal.Notify(termChan, syscall.SIGINT, syscall.SIGTERM)
-	<-termChan
-
-	cancelFunc()
-	wg.Wait()
 }

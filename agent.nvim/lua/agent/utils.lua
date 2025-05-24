@@ -8,10 +8,13 @@ function M.notify(message, level, opts)
   local title = opts.title or "Agent"
   local formatted_message = string.format("[%s] %s", title, message)
   
-  vim.notify(formatted_message, level, {
-    title = title,
-    timeout = opts.timeout,
-  })
+  -- Use vim.schedule to ensure we're in the correct context
+  vim.schedule(function()
+    vim.notify(formatted_message, level, {
+      title = title,
+      timeout = opts.timeout,
+    })
+  end)
 end
 
 -- Debug logging (only shown when debug is enabled)
