@@ -71,15 +71,25 @@ function M.connect(callback)
       
       local success, encoded = pcall(msgpack.encode, identify_msg)
       if success then
+        -- Add framing: 4-byte length prefix + msgpack data (big-endian)
+        local length = #encoded
+        local length_bytes = string.char(
+          math.floor(length / 16777216) % 256,  -- >> 24
+          math.floor(length / 65536) % 256,     -- >> 16
+          math.floor(length / 256) % 256,       -- >> 8
+          length % 256
+        )
+        local frame = length_bytes .. encoded
+        
         vim.schedule(function()
           vim.notify("Sending identification message: " .. vim.inspect(identify_msg), vim.log.levels.INFO)
         end)
-        state.socket:write(encoded, function(err)
+        state.socket:write(frame, function(err)
           vim.schedule(function()
             if err then
               vim.notify("Failed to send identification: " .. err, vim.log.levels.ERROR)
             else
-              vim.notify("Identification message sent successfully (" .. #encoded .. " bytes)", vim.log.levels.INFO)
+              vim.notify("Identification message sent successfully (" .. #frame .. " bytes framed)", vim.log.levels.INFO)
             end
           end)
         end)
@@ -131,8 +141,18 @@ function M.send(message, callback)
     return
   end
   
-  -- Send the message
-  state.socket:write(encoded, function(err)
+  -- Add framing: 4-byte length prefix + msgpack data (big-endian)
+  local length = #encoded
+  local length_bytes = string.char(
+    math.floor(length / 16777216) % 256,  -- >> 24
+    math.floor(length / 65536) % 256,     -- >> 16
+    math.floor(length / 256) % 256,       -- >> 8
+    length % 256
+  )
+  local frame = length_bytes .. encoded
+  
+  -- Send the framed message
+  state.socket:write(frame, function(err)
     if err then
       -- Remove callback on error
       state.callbacks[state.message_id] = nil
@@ -165,7 +185,8 @@ function M.on_read(err, data)
   -- Process complete frames from buffer
   while #state.buffer >= 4 do
     -- Read frame length (big-endian 4 bytes)
-    local length = string.unpack(">I4", state.buffer, 1)
+    local b1, b2, b3, b4 = string.byte(state.buffer, 1, 4)
+    local length = b1 * 16777216 + b2 * 65536 + b3 * 256 + b4  -- << 24, << 16, << 8, << 0
     
     -- Check if we have the complete frame
     if #state.buffer < 4 + length then
