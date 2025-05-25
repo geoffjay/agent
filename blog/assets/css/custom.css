@@ -1,0 +1,61 @@
+/* Override Blowfish Tailwind classes for wider content */
+
+/* Override max-w-prose with max-w for header */
+.single_header {
+  max-width: none !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Override max-w-prose for article content */
+.article-content {
+  max-width: none !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Override max-w-prose for footer */
+footer {
+  max-width: none !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Apply max-width to the main container instead */
+.main-content {
+  max-width: 1200px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 2rem !important;
+  padding-right: 2rem !important;
+}
+
+/* For larger screens, increase max-width */
+@media (min-width: 1280px) {
+  .main-content {
+    max-width: 1400px !important;
+  }
+}
+
+/* For extra large screens */
+@media (min-width: 1536px) {
+  .main-content {
+    max-width: 1600px !important;
+  }
+}
+
+/* Ensure prose content doesn't get too wide for readability */
+.prose {
+  max-width: none !important;
+}
+
+/* Override any specific Tailwind max-w-prose classes */
+.max-w-prose {
+  max-width: none !important;
+}
+
+/* Apply proper centering */
+.mx-auto {
+  margin-left: auto !important;
+  margin-right: auto !important;
+}

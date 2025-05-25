@@ -1,0 +1,22 @@
+baseURL = "https://blog.example.com/"
+languageCode = "en"
+title = "Agent Blog"
+
+# Build settings
+buildDrafts = false
+buildFuture = false
+buildExpired = false
+
+# URL management
+[permalinks]
+  posts = "/:slug/"
+
+[params]
+  # Enable syntax highlighting
+  codeFences = true
+  
+  # SEO
+  description = "A minimal blog about AI agents and development"
+  
+  # Theme settings
+  colorScheme = "blowfish" 

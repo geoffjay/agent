@@ -1,0 +1,15 @@
+title = "Agent Blog"
+languageName = "English"
+languageCode = "en"
+weight = 1
+
+[params.author]
+name = "Agent Blog"
+headline = "Exploring AI agents and development"
+bio = "A minimal blog about AI agents and development practices"
+
+[menu]
+  [[menu.main]]
+    name = "Posts"
+    pageRef = "posts"
+    weight = 10 

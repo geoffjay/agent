@@ -1,0 +1,90 @@
+# Theme
+colorScheme = "blowfish"
+defaultAppearance = "light"
+autoSwitchAppearance = true
+
+# Site config
+enableSearch = false
+enableCodeCopy = true
+
+[homepage]
+layout = "page"
+showRecent = true
+showMoreLink = true
+
+[header]
+layout = "basic"
+
+[footer]
+showCopyright = true
+showThemeAttribution = true
+showAppearanceSwitcher = true
+showScrollToTop = true
+
+[article]
+showDate = true
+showViews = false
+showLikes = false
+showDateUpdated = false
+showAuthor = true
+showHero = false
+heroStyle = "basic"
+showBreadcrumbs = false
+showDraftLabel = true
+showEdit = false
+editURL = ""
+editAppendPath = true
+seriesOpened = false
+showHeadingAnchors = true
+showPagination = true
+invertPagination = false
+showReadingTime = true
+showTableOfContents = false
+showRelatedContent = false
+relatedContentLimit = 3
+showTaxonomies = true
+showAuthorsBadges = false
+showWordCount = false
+showSummary = true
+sharingLinks = false
+
+[list]
+showHero = false
+heroStyle = "background"
+showBreadcrumbs = false
+showSummary = false
+showViews = false
+showLikes = false
+showTableOfContents = false
+showCards = false
+groupByYear = true
+cardView = false
+cardViewScreenWidth = false
+constrainItemsWidth = false
+
+[sitemap]
+excludedKinds = ["taxonomy", "term"]
+
+[taxonomy]
+showTermCount = true
+showHero = false
+heroStyle = "background"
+showBreadcrumbs = false
+showViews = false
+showLikes = false
+showTableOfContents = false
+cardView = false
+
+[term]
+showHero = false
+heroStyle = "background"
+showBreadcrumbs = false
+showViews = false
+showLikes = false
+showTableOfContents = true
+groupByYear = false
+cardView = true
+cardViewScreenWidth = false
+
+# Custom styling
+customCss = ["css/custom.css"] 

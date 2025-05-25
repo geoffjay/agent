@@ -1,11 +1,18 @@
 ---
-layout: post
 title: "Building the Agent Chat TUI - A Terminal Interface for AI Collaboration 🚀"
-date: 2025-01-22 23:45:00 -0600
+date: 2025-05-22T23:45:00-06:00
+slug: "building-agent-chat-tui"
 categories:
   - terminal-ui
   - agent-communication
   - go-development
+tags:
+  - terminal-ui
+  - agent-communication
+  - go-development
+  - bubbletea
+  - tui
+summary: "Building a real-time terminal interface for AI collaboration using Go, bubbletea, and MessagePack over TCP sockets."
 provenance:
   repo: "https://github.com/geoffjay/agent"
   commit: "4c6b2a49bc65ad2b06ef404679615d2a12b59816"
@@ -214,4 +221,4 @@ Now if we could just get the agent to understand why we always name our variable
 
 ---
 
-*This article was originally created in commit [`4c6b2a49bc65ad2b06ef404679615d2a12b59816`](https://github.com/geoffjay/agent/commit/4c6b2a49bc65ad2b06ef404679615d2a12b59816), prompted by commit [`4c6b2a49bc65ad2b06ef404679615d2a12b59816`](https://github.com/geoffjay/agent/commit/4c6b2a49bc65ad2b06ef404679615d2a12b59816).*
+*This article was originally created in commit [`4c6b2a49bc65ad2b06ef404679615d2a12b59816`](https://github.com/geoffjay/agent/commit/4c6b2a49bc65ad2b06ef404679615d2a12b59816), prompted by commit [`4c6b2a49bc65ad2b06ef404679615d2a12b59816`](https://github.com/geoffjay/agent/commit/4c6b2a49bc65ad2b06ef404679615d2a12b59816).* 
