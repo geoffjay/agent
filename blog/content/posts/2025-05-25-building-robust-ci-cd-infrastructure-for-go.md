@@ -8,6 +8,11 @@ categories:
   - ci-cd
   - github-actions
   - automation
+provenance:
+  repo: "https://github.com/geoffjay/agent"
+  commit: "6218221b0137bf0ae3fc4451946696c579e2a531"
+  prompt: "6218221b0137bf0ae3fc4451946696c579e2a531"
+  modifications: []
 ---
 
 Setting up CI/CD infrastructure is one of those tasks that feels like eating your vegetables—you know it's good for you, but it's not exactly thrilling until you realize it prevents your code from embarrassing you in front of the entire internet. Today, I want to share the journey of building a comprehensive CI/CD pipeline for a Go project that goes way beyond the basic "does it compile?" check.
@@ -137,4 +142,8 @@ The parallel job execution means the entire pipeline typically completes in unde
 
 Most importantly, this setup scales. Whether you're a solo developer or a team of 50, the same principles apply: automate the tedious stuff, catch problems early, and make it easy for everyone to maintain high standards without thinking about it.
 
-The next time someone asks "is your CI/CD any good?", you can confidently answer "we test for race conditions, scan for security vulnerabilities, and even check spelling in comments." That's not just CI/CD—that's peace of mind with a side of professional pride. 
+The next time someone asks "is your CI/CD any good?", you can confidently answer "we test for race conditions, scan for security vulnerabilities, and even check spelling in comments." That's not just CI/CD—that's peace of mind with a side of professional pride.
+
+---
+
+*This article was originally created in commit [`6218221b0137bf0ae3fc4451946696c579e2a531`](https://github.com/geoffjay/agent/commit/6218221b0137bf0ae3fc4451946696c579e2a531), prompted by commit [`6218221b0137bf0ae3fc4451946696c579e2a531`](https://github.com/geoffjay/agent/commit/6218221b0137bf0ae3fc4451946696c579e2a531).* 
