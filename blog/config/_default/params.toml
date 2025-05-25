@@ -7,8 +7,10 @@ autoSwitchAppearance = true
 enableSearch = false
 enableCodeCopy = true
 
-# Homepage
-homepage.layout = "page"
+[homepage]
+layout = "page"
+showRecent = true
+showMoreLink = true
 
 [header]
 layout = "basic"
@@ -82,4 +84,7 @@ showLikes = false
 showTableOfContents = true
 groupByYear = false
 cardView = true
-cardViewScreenWidth = false 
+cardViewScreenWidth = false
+
+# Custom styling
+customCss = ["css/custom.css"] 
