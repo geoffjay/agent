@@ -1,6 +1,6 @@
 ---
 title: "Adopting gydnc: Bringing Systematic Guidance to Our Development Workflow 🚀"
-date: 2025-05-20T16:59:32-06:00
+date: 2025-05-20T16:59:32-08:00
 slug: "introducing-gydnc-guidance-system"
 categories:
   - development

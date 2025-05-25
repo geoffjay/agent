@@ -1,6 +1,6 @@
 ---
 title: "Building the Agent Chat TUI - A Terminal Interface for AI Collaboration 🚀"
-date: 2025-05-22T23:45:00-06:00
+date: 2025-05-22T23:45:00-08:00
 slug: "building-agent-chat-tui"
 categories:
   - terminal-ui

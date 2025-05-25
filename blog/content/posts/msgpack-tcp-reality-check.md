@@ -1,6 +1,6 @@
 ---
 title: "The Reality Check: MessagePack, TCP Streams, and Why Your Pretty Demo Always Breaks in Production 🤯"
-date: 2025-05-23T15:30:00-06:00
+date: 2025-05-23T15:30:00-08:00
 slug: "msgpack-tcp-reality-check"
 categories:
   - debugging

@@ -1,6 +1,6 @@
 ---
 title: "Introducing agent.nvim: Bridging the Gap Between AI Agents and Your Editor 🚀"
-date: 2025-05-21T22:21:53-06:00
+date: 2025-05-21T22:21:53-08:00
 slug: "agent-nvim-plugin-launch"
 categories:
   - neovim

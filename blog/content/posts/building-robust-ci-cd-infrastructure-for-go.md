@@ -1,13 +1,20 @@
 ---
-layout: post
 title: "Building Robust CI/CD Infrastructure for Go - From Zero to Production Ready 🚀"
-date: 2025-05-25 15:30:00 -0800
+date: 2025-05-25T09:54:00-07:00
+slug: "building-robust-cicd-infrastructure-for-go"
 categories:
   - devops
   - golang
   - ci-cd
   - github-actions
   - automation
+tags:
+  - ci-cd
+  - devops
+  - go-development
+  - golang
+  - github-actions
+summary: "Creating a CI/CD infrastructure for the agent project that ensures consistency, security, and best practices for test coverage."
 provenance:
   repo: "https://github.com/geoffjay/agent"
   commit: "6218221b0137bf0ae3fc4451946696c579e2a531"
