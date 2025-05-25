@@ -62,7 +62,7 @@ format-check: ## Check if code is properly formatted
 security: ## Run security checks with gosec
 	@if ! command -v gosec >/dev/null 2>&1; then \
 		echo "Installing gosec..."; \
-		go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest; \
+		go install github.com/securego/gosec/v2/cmd/gosec@latest; \
 	fi
 	gosec ./...
 

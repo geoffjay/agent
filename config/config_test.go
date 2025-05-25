@@ -6,17 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-// Mock for the logrus logger
-type MockLogger struct {
-	mock.Mock
-}
-
-func (m *MockLogger) Tracef(format string, args ...interface{}) {
-	m.Called(format, args)
-}
 
 func TestPrepare(t *testing.T) {
 	tests := []struct {

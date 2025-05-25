@@ -76,7 +76,7 @@ print_success "Linting passed"
 print_step "Running security checks"
 if ! command -v gosec >/dev/null 2>&1; then
     echo "Installing gosec..."
-    go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+    go install github.com/securego/gosec/v2/cmd/gosec@latest
 fi
 gosec ./... || print_error "Security checks failed"
 print_success "Security checks passed"
