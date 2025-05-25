@@ -1,5 +1,8 @@
 run:
   tests: true
+  timeout: 5m
+  issues-exit-code: 1
+  modules-download-mode: readonly
 
 output:
   formats:
@@ -10,6 +13,11 @@ output:
   path-prefix: ""
   sort-results: false
 
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-use-default: false
+
 linters:
   # additional linters that aren't enabled by default
   enable:
@@ -17,7 +25,8 @@ linters:
     # - cyclop
     # - dogsled
     # - dupl
-    # - errorlint
+    - errcheck
+    - errorlint
     # - exhaustive
     # - forbidigo
     # - funlen
@@ -25,9 +34,18 @@ linters:
     - godot
     - gofmt
     - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
     - misspell
     - nestif
     - revive
+    - staticcheck
+    - typecheck
+    - unconvert
+    - unused
+    - whitespace
 
 linters-settings:
   cyclop:
@@ -81,5 +99,16 @@ linters-settings:
   goimports:
     local-prefixes: github.com/geoffjay/agent
 
+  gosec:
+    excludes:
+      - G104 # Audit errors not checked
+    confidence: medium
+    severity: medium
+
   nestif:
     min-complexity: 4
+
+  revive:
+    rules:
+      - name: exported
+        arguments: [checkPrivateReceivers, sayRepetitiveInsteadOfStutters]

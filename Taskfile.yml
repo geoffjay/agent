@@ -4,11 +4,73 @@ silent: true
 
 tasks:
   build:
+    desc: Build the main binary
     cmds:
+      - mkdir -p build
       - go build -o build/agent .
+
+  test:
+    desc: Run tests with coverage
+    cmds:
+      - go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      - go tool cover -html=coverage.out -o coverage.html
+
+  test:coverage:
+    desc: Run tests and show coverage in terminal
+    cmds:
+      - go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      - go tool cover -func=coverage.out
+
+  lint:
+    desc: Run golangci-lint
+    cmds:
+      - golangci-lint run --config=.golangci.yml
+
+  lint:fix:
+    desc: Run golangci-lint with auto-fix
+    cmds:
+      - golangci-lint run --config=.golangci.yml --fix
+
+  format:
+    desc: Format code with gofmt and goimports
+    cmds:
+      - gofmt -s -w .
+      - goimports -w .
+
+  format:check:
+    desc: Check if code is properly formatted
+    cmds:
+      - test -z "$(gofmt -s -l .)"
+      - test -z "$(goimports -l .)"
+
+  security:
+    desc: Run security checks with gosec
+    cmds:
+      - gosec ./...
+
+  deps:
+    desc: Download and verify dependencies
+    cmds:
+      - go mod download
+      - go mod verify
+      - go mod tidy
+
+  clean:
+    desc: Clean build artifacts and coverage files
+    cmds:
+      - rm -rf build/
+      - rm -f coverage.out coverage.html
+
+  ci:
+    desc: Run all CI checks locally
+    deps: [deps, format:check, lint, test, security, build]
+
   dev:
+    desc: Start development server
     cmds:
       - overmind start
+
   kill:
+    desc: Stop development server
     cmds:
       - overmind stop

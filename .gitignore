@@ -2,7 +2,42 @@
 
 .direnv/
 
+# Build artifacts
 /build/agent
+/build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
 coverage.html
 coverage.out
+*.coverprofile
+
+# Dependency directories (remove if vendoring)
+vendor/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
