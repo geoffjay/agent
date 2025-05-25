@@ -41,7 +41,7 @@ type chatMessage struct {
 }
 
 var (
-	// Styles
+	// Styles for the chat interface.
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("#7C3AED")).
@@ -89,6 +89,7 @@ func initialModel() chatModel {
 	}
 }
 
+// Init initializes the chat model and returns initial commands.
 func (m chatModel) Init() tea.Cmd {
 	return tea.Batch(
 		textarea.Blink,
@@ -213,6 +214,7 @@ func (m *chatModel) sendMessage(content string) tea.Cmd {
 	}
 }
 
+// Update handles tea.Msg updates and returns updated model and commands.
 func (m chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
@@ -364,6 +366,7 @@ func (m *chatModel) updateViewport() {
 	m.viewport.GotoBottom()
 }
 
+// View renders the chat interface.
 func (m chatModel) View() string {
 	if !m.ready {
 		return "Initializing..."

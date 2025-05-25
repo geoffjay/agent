@@ -10,10 +10,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Agent represents the main agent that runs in the background.
 type Agent struct{}
 
 func (a *Agent) init() {}
 
+// Run starts the agent and waits for the context to be cancelled.
 func (a *Agent) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 

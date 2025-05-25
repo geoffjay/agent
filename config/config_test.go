@@ -59,24 +59,27 @@ func TestLoadConfig(t *testing.T) {
 	// Create a temporary directory
 	tmpDir, err := os.MkdirTemp("", "config-test")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		err := os.RemoveAll(tmpDir)
+		assert.NoError(t, err)
+	}()
 
 	// Create a valid config file
 	validConfig := `name: TestApp`
 	validFile := filepath.Join(tmpDir, "valid.yml")
-	err = os.WriteFile(validFile, []byte(validConfig), 0644)
+	err = os.WriteFile(validFile, []byte(validConfig), 0600)
 	assert.NoError(t, err)
 
 	// Create an invalid config file
 	invalidConfig := `name: TestApp: invalid`
 	invalidFile := filepath.Join(tmpDir, "invalid.yml")
-	err = os.WriteFile(invalidFile, []byte(invalidConfig), 0644)
+	err = os.WriteFile(invalidFile, []byte(invalidConfig), 0600)
 	assert.NoError(t, err)
 
 	// Create a file that can't be unmarshalled properly
 	badStructConfig := `name: 123` // This should cause an unmarshal error when strict decoding
 	badStructFile := filepath.Join(tmpDir, "badstruct.yml")
-	err = os.WriteFile(badStructFile, []byte(badStructConfig), 0644)
+	err = os.WriteFile(badStructFile, []byte(badStructConfig), 0600)
 	assert.NoError(t, err)
 
 	// Test with valid config
@@ -90,7 +93,7 @@ func TestLoadConfig(t *testing.T) {
 	// Test with invalid file extension
 	t.Run("Invalid file extension", func(t *testing.T) {
 		invalidExtFile := filepath.Join(tmpDir, "invalid.txt")
-		err = os.WriteFile(invalidExtFile, []byte(validConfig), 0644)
+		err = os.WriteFile(invalidExtFile, []byte(validConfig), 0600)
 		assert.NoError(t, err)
 
 		var cfg Config
@@ -125,11 +128,15 @@ func TestLoadConfig(t *testing.T) {
 
 	// Test environment variable override
 	t.Run("Environment variable override", func(t *testing.T) {
-		os.Setenv("AGENT_NAME", "EnvApp")
-		defer os.Unsetenv("AGENT_NAME")
+		err := os.Setenv("AGENT_NAME", "EnvApp")
+		assert.NoError(t, err)
+		defer func() {
+			err := os.Unsetenv("AGENT_NAME")
+			assert.NoError(t, err)
+		}()
 
 		var cfg Config
-		err := LoadConfig(validFile, &cfg)
+		err = LoadConfig(validFile, &cfg)
 		assert.NoError(t, err)
 		assert.Equal(t, "EnvApp", cfg.Name)
 	})
@@ -139,12 +146,18 @@ func TestGetConfig(t *testing.T) {
 	// Create a temporary directory
 	tmpDir, err := os.MkdirTemp("", "config-test")
 	assert.NoError(t, err)
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		err := os.RemoveAll(tmpDir)
+		assert.NoError(t, err)
+	}()
 
 	// Save current directory
 	currentDir, err := os.Getwd()
 	assert.NoError(t, err)
-	defer os.Chdir(currentDir)
+	defer func() {
+		err := os.Chdir(currentDir)
+		assert.NoError(t, err)
+	}()
 
 	// Change to temp directory
 	err = os.Chdir(tmpDir)
@@ -152,8 +165,12 @@ func TestGetConfig(t *testing.T) {
 
 	// Test with non-existent file
 	t.Run("Non-existent file", func(t *testing.T) {
-		os.Setenv("AGENTFILE", "nonexistent.yml")
-		defer os.Unsetenv("AGENTFILE")
+		err := os.Setenv("AGENTFILE", "nonexistent.yml")
+		assert.NoError(t, err)
+		defer func() {
+			err := os.Unsetenv("AGENTFILE")
+			assert.NoError(t, err)
+		}()
 
 		cfg, err := GetConfig()
 		assert.Error(t, err)
@@ -163,12 +180,13 @@ func TestGetConfig(t *testing.T) {
 	// Create a valid config file
 	validConfig := `name: TestApp`
 	validFile := filepath.Join(tmpDir, "Agentfile.yml")
-	err = os.WriteFile(validFile, []byte(validConfig), 0644)
+	err = os.WriteFile(validFile, []byte(validConfig), 0600)
 	assert.NoError(t, err)
 
 	// Test with default config file
 	t.Run("Default config file", func(t *testing.T) {
-		os.Unsetenv("AGENTFILE")
+		err = os.Unsetenv("AGENTFILE")
+		assert.NoError(t, err)
 
 		cfg, err := GetConfig()
 		assert.NoError(t, err)
@@ -180,11 +198,15 @@ func TestGetConfig(t *testing.T) {
 	t.Run("Custom config file", func(t *testing.T) {
 		customConfig := `name: CustomApp`
 		customFile := filepath.Join(tmpDir, "custom.yml")
-		err = os.WriteFile(customFile, []byte(customConfig), 0644)
+		err = os.WriteFile(customFile, []byte(customConfig), 0600)
 		assert.NoError(t, err)
 
-		os.Setenv("AGENTFILE", "custom.yml")
-		defer os.Unsetenv("AGENTFILE")
+		err = os.Setenv("AGENTFILE", "custom.yml")
+		assert.NoError(t, err)
+		defer func() {
+			err := os.Unsetenv("AGENTFILE")
+			assert.NoError(t, err)
+		}()
 
 		cfg, err := GetConfig()
 		assert.NoError(t, err)
@@ -196,11 +218,15 @@ func TestGetConfig(t *testing.T) {
 	t.Run("Load config error", func(t *testing.T) {
 		invalidConfig := `name: TestApp: invalid`
 		invalidFile := filepath.Join(tmpDir, "invalid.yml")
-		err = os.WriteFile(invalidFile, []byte(invalidConfig), 0644)
+		err = os.WriteFile(invalidFile, []byte(invalidConfig), 0600)
 		assert.NoError(t, err)
 
-		os.Setenv("AGENTFILE", "invalid.yml")
-		defer os.Unsetenv("AGENTFILE")
+		err = os.Setenv("AGENTFILE", "invalid.yml")
+		assert.NoError(t, err)
+		defer func() {
+			err := os.Unsetenv("AGENTFILE")
+			assert.NoError(t, err)
+		}()
 
 		cfg, err := GetConfig()
 		assert.Error(t, err)

@@ -2,15 +2,17 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	logrus "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	msgpack "github.com/vmihailenco/msgpack/v5"
 )
 
+// AgentService represents a TCP service that handles connections between chat and nvim clients.
 type AgentService struct {
 	listener   net.Listener
 	clients    map[string]*Client
@@ -19,6 +21,7 @@ type AgentService struct {
 	messageMux sync.Mutex
 }
 
+// Client represents a connected client (either chat or nvim).
 type Client struct {
 	ID       string
 	Type     string // "chat" or "nvim"
@@ -27,6 +30,7 @@ type Client struct {
 	LastSeen time.Time
 }
 
+// Message represents a message exchanged between clients through the agent service.
 type Message struct {
 	ID      int         `msgpack:"id" json:"id"`
 	Type    string      `msgpack:"type" json:"type"`
@@ -35,12 +39,14 @@ type Message struct {
 	Content interface{} `msgpack:"content" json:"content"`
 }
 
+// NewAgentService creates a new AgentService instance.
 func NewAgentService() *AgentService {
 	return &AgentService{
 		clients: make(map[string]*Client),
 	}
 }
 
+// Start starts the agent service on the specified address.
 func (s *AgentService) Start(address string) error {
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
@@ -48,12 +54,12 @@ func (s *AgentService) Start(address string) error {
 	}
 
 	s.listener = listener
-	log.Infof("Agent service listening on %s", address)
+	logrus.Infof("Agent service listening on %s", address)
 
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Errorf("Failed to accept connection: %v", err)
+			logrus.Errorf("Failed to accept connection: %v", err)
 			continue
 		}
 
@@ -62,10 +68,14 @@ func (s *AgentService) Start(address string) error {
 }
 
 func (s *AgentService) handleConnection(conn net.Conn) {
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.Printf("Failed to close connection: %v", err)
+		}
+	}()
 
 	clientID := conn.RemoteAddr().String()
-	log.Infof("New client connected: %s", clientID)
+	logrus.Infof("New client connected: %s", clientID)
 
 	client := &Client{
 		ID:       clientID,
@@ -82,7 +92,7 @@ func (s *AgentService) handleConnection(conn net.Conn) {
 		s.clientsMux.Lock()
 		delete(s.clients, clientID)
 		s.clientsMux.Unlock()
-		log.Infof("Client disconnected: %s", clientID)
+		logrus.Infof("Client disconnected: %s", clientID)
 	}()
 
 	encoder := msgpack.NewEncoder(conn)
@@ -94,7 +104,7 @@ func (s *AgentService) handleConnection(conn net.Conn) {
 		n, err := conn.Read(readBuf)
 		if err != nil {
 			if err.Error() != "EOF" {
-				log.Debugf("Failed to read from connection %s: %v", clientID, err)
+				logrus.Debugf("Failed to read from connection %s: %v", clientID, err)
 			}
 			break
 		}
@@ -123,7 +133,7 @@ func (s *AgentService) handleConnection(conn net.Conn) {
 			var msg Message
 			err := msgpack.Unmarshal(frameData, &msg)
 			if err != nil {
-				log.Debugf("Failed to decode framed message from %s: %v", clientID, err)
+				logrus.Debugf("Failed to decode framed message from %s: %v", clientID, err)
 				continue
 			}
 
@@ -131,14 +141,14 @@ func (s *AgentService) handleConnection(conn net.Conn) {
 			client.LastSeen = time.Now()
 			msg.From = clientID
 
-			log.Debugf("Received framed message from %s (%s): type=%s, content=%+v", clientID, client.Type, msg.Type, msg.Content)
+			logrus.Debugf("Received framed message from %s (%s): type=%s, content=%+v", clientID, client.Type, msg.Type, msg.Content)
 
 			// Handle client identification
 			if msg.Type == "identify" {
 				if contentMap, ok := msg.Content.(map[string]interface{}); ok {
 					if clientType, ok := contentMap["client_type"].(string); ok {
 						client.Type = clientType
-						log.Infof("Client %s identified as: %s", clientID, clientType)
+						logrus.Infof("Client %s identified as: %s", clientID, clientType)
 					}
 				}
 				continue
@@ -151,12 +161,12 @@ func (s *AgentService) handleConnection(conn net.Conn) {
 }
 
 func (s *AgentService) routeMessage(msg Message, sender *Client, senderEncoder *msgpack.Encoder) {
-	log.Debugf("Routing message: type=%s, from=%s (%s)", msg.Type, sender.ID, sender.Type)
+	logrus.Debugf("Routing message: type=%s, from=%s (%s)", msg.Type, sender.ID, sender.Type)
 
 	switch msg.Type {
 	case "chat":
 		// Route chat messages to nvim clients
-		log.Debugf("Routing chat message to nvim clients")
+		logrus.Debugf("Routing chat message to nvim clients")
 		s.routeToType("nvim", msg)
 
 		// Send acknowledgment back to chat client
@@ -208,12 +218,12 @@ func (s *AgentService) routeToType(clientType string, msg Message) {
 		}
 	}
 
-	log.Debugf("Routing to %s clients: found %d targets", clientType, targetClients)
+	logrus.Debugf("Routing to %s clients: found %d targets", clientType, targetClients)
 
 	for _, client := range s.clients {
 		if client.Type == clientType {
 			encoder := msgpack.NewEncoder(client.Conn)
-			log.Debugf("Sending message to %s client %s", clientType, client.ID)
+			logrus.Debugf("Sending message to %s client %s", clientType, client.ID)
 			s.sendToClient(client, msg, encoder)
 		}
 	}
@@ -243,14 +253,14 @@ func (s *AgentService) sendToClient(client *Client, msg Message, encoder *msgpac
 	// Encode message to bytes first
 	data, err := msgpack.Marshal(msg)
 	if err != nil {
-		log.Errorf("Failed to marshal message for client %s: %v", client.ID, err)
+		logrus.Errorf("Failed to marshal message for client %s: %v", client.ID, err)
 		return
 	}
 
 	// Send with 4-byte length prefix for framing (big-endian)
 	dataLen := len(data)
 	if dataLen < 0 || dataLen > 0xFFFFFFFF {
-		log.Errorf("Message too large: %d bytes", dataLen)
+		logrus.Errorf("Message too large: %d bytes", dataLen)
 		return
 	}
 	length := uint32(dataLen)
@@ -264,9 +274,9 @@ func (s *AgentService) sendToClient(client *Client, msg Message, encoder *msgpac
 	frame := append(lengthBytes, data...)
 	_, err = client.Conn.Write(frame)
 	if err != nil {
-		log.Errorf("Failed to send message to client %s: %v", client.ID, err)
+		logrus.Errorf("Failed to send message to client %s: %v", client.ID, err)
 	} else {
-		log.Debugf("Sent framed message to %s: type=%s, id=%d, frame_size=%d", client.ID, msg.Type, msg.ID, len(frame))
+		logrus.Debugf("Sent framed message to %s: type=%s, id=%d, frame_size=%d", client.ID, msg.Type, msg.ID, len(frame))
 	}
 }
 
@@ -297,8 +307,8 @@ var serveCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		verbose, _ := cmd.Flags().GetBool("verbose")
 		if verbose {
-			log.SetLevel(log.DebugLevel)
-			log.Debug("Debug logging enabled")
+			logrus.SetLevel(logrus.DebugLevel)
+			logrus.Debug("Debug logging enabled")
 		}
 
 		address := "127.0.0.1:7070"
@@ -306,11 +316,11 @@ var serveCmd = &cobra.Command{
 			address = args[0]
 		}
 
-		log.Info("Starting agent service...")
+		logrus.Info("Starting agent service...")
 		service := NewAgentService()
 
 		if err := service.Start(address); err != nil {
-			log.Fatal("Failed to start agent service:", err)
+			logrus.Fatal("Failed to start agent service:", err)
 		}
 	},
 }

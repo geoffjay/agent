@@ -13,6 +13,7 @@ var rootCmd = &cobra.Command{
 	Long:  `Agent is a CLI tool for managing autonomous agents. Use the subcommands to initialize, run, and manage agents.`,
 }
 
+// Execute runs the root command and handles any errors.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		log.Error(err)
