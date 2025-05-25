@@ -21,13 +21,18 @@ tags:
 ## Frontmatter Format
 ```yaml
 ---
-layout: post
 title: "Example Blog Post Title - With Hyphenated Subtitle: Like This 🚀"
-date: YYYY-MM-DD HH:MM:SS -0800 # Derived from system time & formatted to PST/PDT
+date: YYYY-MM-DDTHH:MM:SS-07:00  # Use current system time in PDT/PST format
+slug: "kebab-case-url-slug"
 categories:
   - category1
   - category2
   - category3
+tags:
+  - tag1
+  - tag2
+  - tag3
+summary: "Brief summary of the post content for SEO and previews"
 provenance:
   repo: "https://github.com/geoffjay/agent" # Example repo
   commit: "FULL_GIT_SHA_OF_INITIAL_COMMIT" # Replace with actual SHA
@@ -37,13 +42,17 @@ provenance:
 ```
 
 Notes on frontmatter:
-- Use `post` for the layout.
+- **IMPORTANT:** Do NOT include `layout: post` - Hugo doesn't use this field
 - Title can contain hyphens and optionally relevant emojis (🚀).
 - **IMPORTANT:** Enclose the `title` (and any other string value) in double quotes if it contains special YAML characters like a colon (`:`).
-- Date includes time and timezone (standardized to -0600), derived from system time.
-- Categories are listed as YAML array items with hyphens.
-- Category names use hyphens instead of spaces.
-- `provenance` block is added *after* the first commit.
+- **CRITICAL:** Date must be current or past time. Hugo will NOT render future-dated posts by default.
+- Date format: Use ISO format `YYYY-MM-DDTHH:MM:SS-07:00` (note the `T` separator)
+- Timezone: Use `-07:00` for PDT (summer) or `-08:00` for PST (winter) based on current system time
+- `slug` field controls the URL path and should match the filename without date prefix
+- Categories and tags are listed as YAML array items with hyphens
+- Category/tag names use hyphens instead of spaces
+- `summary` field provides SEO-friendly description
+- `provenance` block is added *after* the first commit
 
 ## Content Structure
 1. **Introduction**
@@ -128,7 +137,49 @@ Notes on frontmatter:
    - Technical accuracy in examples
    - Emojis and humor enhance rather than detract from content
 
+## Hugo-Specific Considerations
+
+### Future Post Behavior
+- **Default**: Hugo will NOT render posts with future dates (buildFuture = false)
+- **Testing**: Use `hugo server --buildFuture --buildDrafts` to preview future posts
+- **Solution**: Always use current or past timestamps for immediate publication
+
+### Timezone Handling
+- Use system-local timezone for consistency
+- PDT (Pacific Daylight Time): `-07:00` (summer months)
+- PST (Pacific Standard Time): `-08:00` (winter months)
+- Check current timezone with: `date "+%Y-%m-%d %H:%M:%S %z"`
+
+### Troubleshooting Post Visibility
+1. **Post not appearing?** Check if date is in the future:
+   ```bash
+   cd blog
+   hugo list all | grep "your-post-slug"
+   ```
+2. **Verify Hugo recognizes the post**:
+   ```bash
+   cd blog
+   hugo list all | grep "content/posts" | wc -l
+   ```
+3. **Test server build**:
+   ```bash
+   cd blog
+   hugo server --buildFuture --buildDrafts
+   ```
+
+### Hugo Commands (run from blog/ directory)
+- `hugo list all` - Show all content Hugo recognizes
+- `hugo list drafts` - Show draft posts only
+- `hugo server` - Standard development server
+- `hugo server --buildFuture` - Include future-dated posts
+- `hugo server --buildDrafts` - Include draft posts
+
 ## Common Mistakes
+- **Future-dated posts**: Setting date in the future prevents Hugo from rendering the post
+- **Wrong timezone**: Using incorrect timezone offset for current season (PDT vs PST)
+- **Invalid date format**: Missing `T` separator in ISO date format
+- **Including layout field**: Hugo doesn't use `layout: post` in frontmatter
+- **Missing slug field**: Not providing explicit URL slug can cause routing issues
 - Inconsistent SHAs between frontmatter and footer
 - Abbreviated SHAs
 - Missing language in code blocks
