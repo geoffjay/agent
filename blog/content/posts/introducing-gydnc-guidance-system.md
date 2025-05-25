@@ -1,11 +1,18 @@
 ---
-layout: post
 title: "Adopting gydnc: Bringing Systematic Guidance to Our Development Workflow 🚀"
-date: 2025-05-22 16:59:32 -0600
+date: 2025-05-20T16:59:32-06:00
+slug: "introducing-gydnc-guidance-system"
 categories:
   - development
   - tooling
   - ai-integration
+tags:
+  - development
+  - tooling
+  - ai-integration
+  - gydnc
+  - workflow
+summary: "How we integrated gydnc guidance system into our repository to centralize development practices and improve both human and AI collaboration."
 provenance:
   repo: "https://github.com/geoffjay/agent"
   commit: "57a4043b9cd9baf98369d75272b6e161537eab18"

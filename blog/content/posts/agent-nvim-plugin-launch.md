@@ -1,11 +1,18 @@
 ---
-layout: post
 title: "Introducing agent.nvim: Bridging the Gap Between AI Agents and Your Editor 🚀"
-date: 2025-05-22 22:21:53 -0600
+date: 2025-05-21T22:21:53-06:00
+slug: "agent-nvim-plugin-launch"
 categories:
   - neovim
   - ai-agents
   - plugin-development
+tags:
+  - neovim
+  - ai-agents
+  - plugin-development
+  - lua
+  - tcp-sockets
+summary: "Launching agent.nvim, a Neovim plugin that creates a TCP socket bridge between your editor and autonomous agent services for real-time AI collaboration."
 provenance:
   repo: "https://github.com/geoffjay/agent"
   commit: "30fd7b71b27bfa1e9e92ee480c798629aaa18893"
