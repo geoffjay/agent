@@ -11,7 +11,7 @@ tags:
 # Recipe: Blog Article Provenance
 
 ## Prerequisites
-- Article committed to git in blog/content/
+- Article committed to git in blog/content/posts
 - Understanding of git history preservation principles
 
 ## Steps
@@ -48,7 +48,7 @@ tags:
 
 5. Commit changes:
    ```bash
-   git add blog/content/your-article.md
+   git add blog/content/posts/your-article.md
    git commit -m "docs(blog): add provenance information"
    ```
 
@@ -75,7 +75,7 @@ tags:
 
 4. Commit changes:
    ```bash
-   git add blog/content/your-article.md
+   git add blog/content/posts/your-article.md
    git commit -m "docs(blog): add modification provenance"
    ```
 

@@ -87,7 +87,9 @@ func handleConnection(conn net.Conn) {
 					"content": "This is a test notification from the agent!",
 				},
 			}
-			encoder.Encode(notification)
+			if err := encoder.Encode(notification); err != nil {
+				log.Printf("Failed to encode notification: %v", err)
+			}
 		}()
 	}
 

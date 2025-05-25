@@ -8,7 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/vmihailenco/msgpack/v5"
+	msgpack "github.com/vmihailenco/msgpack/v5"
 )
 
 type AgentService struct {
@@ -248,7 +248,12 @@ func (s *AgentService) sendToClient(client *Client, msg Message, encoder *msgpac
 	}
 
 	// Send with 4-byte length prefix for framing (big-endian)
-	length := uint32(len(data))
+	dataLen := len(data)
+	if dataLen < 0 || dataLen > 0xFFFFFFFF {
+		log.Errorf("Message too large: %d bytes", dataLen)
+		return
+	}
+	length := uint32(dataLen)
 	lengthBytes := make([]byte, 4)
 	lengthBytes[0] = byte(length >> 24)
 	lengthBytes[1] = byte(length >> 16)

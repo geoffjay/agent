@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
 	"strings"
 	"time"
@@ -12,7 +13,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/vmihailenco/msgpack/v5"
+	msgpack "github.com/vmihailenco/msgpack/v5"
 )
 
 type chatModel struct {
@@ -113,12 +114,21 @@ func (m chatModel) connectToAgent() tea.Cmd {
 
 		data, err := msgpack.Marshal(identifyMsg)
 		if err != nil {
-			conn.Close()
+			if closeErr := conn.Close(); closeErr != nil {
+				log.Debugf("Failed to close connection: %v", closeErr)
+			}
 			return connectionErrorMsg{err}
 		}
 
 		// Send with 4-byte length prefix for framing (big-endian)
-		length := uint32(len(data))
+		dataLen := len(data)
+		if dataLen < 0 || dataLen > 0xFFFFFFFF {
+			if closeErr := conn.Close(); closeErr != nil {
+				log.Debugf("Failed to close connection: %v", closeErr)
+			}
+			return connectionErrorMsg{fmt.Errorf("message too large: %d bytes", dataLen)}
+		}
+		length := uint32(dataLen)
 		lengthBytes := make([]byte, 4)
 		lengthBytes[0] = byte(length >> 24)
 		lengthBytes[1] = byte(length >> 16)
@@ -129,7 +139,9 @@ func (m chatModel) connectToAgent() tea.Cmd {
 		frame := append(lengthBytes, data...)
 		_, err = conn.Write(frame)
 		if err != nil {
-			conn.Close()
+			if closeErr := conn.Close(); closeErr != nil {
+				log.Debugf("Failed to close connection: %v", closeErr)
+			}
 			return connectionErrorMsg{err}
 		}
 
@@ -179,7 +191,11 @@ func (m *chatModel) sendMessage(content string) tea.Cmd {
 		}
 
 		// Send with 4-byte length prefix for framing (big-endian)
-		length := uint32(len(data))
+		dataLen := len(data)
+		if dataLen < 0 || dataLen > 0xFFFFFFFF {
+			return connectionErrorMsg{fmt.Errorf("message too large: %d bytes", dataLen)}
+		}
+		length := uint32(dataLen)
 		lengthBytes := make([]byte, 4)
 		lengthBytes[0] = byte(length >> 24)
 		lengthBytes[1] = byte(length >> 16)
@@ -205,7 +221,9 @@ func (m chatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 		case tea.KeyCtrlC:
 			if m.connected && m.conn != nil {
-				m.conn.Close()
+				if closeErr := m.conn.Close(); closeErr != nil {
+					log.Debugf("Failed to close connection: %v", closeErr)
+				}
 			}
 			return m, tea.Quit
 
