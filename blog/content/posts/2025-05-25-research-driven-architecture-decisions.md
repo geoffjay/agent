@@ -11,6 +11,11 @@ tags:
   - research-methodology
   - agent-architecture
 summary: "A deep dive into our research methodology for making foundational architectural decisions in the agent project, exploring how we balanced trade-offs and revised recommendations through systematic analysis."
+provenance:
+  repo: "https://github.com/geoffjay/agent"
+  commit: "803b0a4ed1a95bbca1a8c9a38b2d01bae91ad773"
+  prompt: "803b0a4ed1a95bbca1a8c9a38b2d01bae91ad773"
+  modifications: []
 ---
 
 When building a new software platform, especially one as ambitious as an AI agent system, the architectural decisions you make early on will echo throughout the project's lifetime. Rather than diving straight into implementation, we took a step back and conducted comprehensive research across four critical areas: runtime generation, runtime linking, agent operational modes, and licensing strategy.
@@ -152,4 +157,4 @@ The next phase involves turning these research insights into working code—but 
 
 ---
 
-*This article was originally created in commit [`561c19284a26515439c23836c423f2c2ffedca65`](https://github.com/geoffjay/agent/commit/561c19284a26515439c23836c423f2c2ffedca65).* 
+*This article was originally created in commit [`803b0a4ed1a95bbca1a8c9a38b2d01bae91ad773`](https://github.com/geoffjay/agent/commit/803b0a4ed1a95bbca1a8c9a38b2d01bae91ad773).* 
