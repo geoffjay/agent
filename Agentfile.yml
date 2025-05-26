@@ -1,3 +1,6 @@
 ---
-name: "test"
-issues: "./docs/issues/todo.md"
+agents:
+- name: "dev-coder-agent/v1"
+  mode: "autonomous"
+  model: "claude-4-sonnet"
+  tashs: "./docs/issues/todo.md"
