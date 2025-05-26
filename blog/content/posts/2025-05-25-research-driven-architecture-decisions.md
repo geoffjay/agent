@@ -1,6 +1,6 @@
 ---
-title: "Research-Driven Architecture: How We Approached Foundational Design Decisions 🧪"
-date: 2025-05-25T23:18:48-08:00
+title: "Research-Driven Architecture: How We Approached Foundational Design Decisions ��"
+date: 2025-05-25T10:00:00-08:00
 slug: "research-driven-architecture-decisions"
 categories:
   - architecture
