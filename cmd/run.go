@@ -7,7 +7,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/geoffjay/agent/core"
+	"github.com/geoffjay/agent/internal/agent"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -28,7 +28,7 @@ func init() {
 }
 
 func runAgent() {
-	agent := core.Agent{}
+	agent := agent.Agent{}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	wg := &sync.WaitGroup{}
