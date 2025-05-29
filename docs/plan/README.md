@@ -9,6 +9,478 @@ proposed.
 
 This plan has been enhanced with comprehensive research insights covering runtime generation, runtime linking, task integrations, agent modes, and licensing strategies. The research findings have been converted into detailed implementation roadmaps available in `docs/plan/research/`.
 
+## Content Indexing and Knowledge Management
+
+The agent system requires robust content indexing and knowledge management capabilities to enable agents to effectively access and utilize various types of information during their operations. This section outlines the implementation strategy for embedded Retrieval Augmented Generation (RAG) systems and content indexing that operate without requiring separate services.
+
+### Functional Requirements
+
+**FR-KM-001**: Content Type Support
+- The system SHALL index and search documentation files (Markdown, HTML, PDF, plain text)
+- The system SHALL index and search source code files with language-aware parsing
+- The system SHALL index and search design files (images with OCR, design documents)
+- The system SHALL index and search configuration files (YAML, JSON, TOML, XML)
+- The system SHALL support incremental indexing for changed content
+- The system SHALL maintain content metadata including file paths, modification times, and content types
+
+**FR-KM-002**: Embedded Vector Database
+- The system SHALL use embedded vector databases that do not require separate services
+- The system SHALL store vector embeddings locally with the agent installation
+- The system SHALL support multiple embedding models for different content types
+- The system SHALL provide efficient similarity search with sub-second response times
+- The system SHALL support concurrent access from multiple agent instances
+- The system SHALL maintain data consistency across agent operations
+
+**FR-KM-003**: Knowledge Retrieval
+- The system SHALL provide semantic search capabilities across indexed content
+- The system SHALL support hybrid search combining keyword and vector similarity
+- The system SHALL rank results by relevance and recency
+- The system SHALL support filtering by content type, file path, and metadata
+- The system SHALL provide context-aware result formatting for agent consumption
+- The system SHALL support result summarization and snippet extraction
+
+**FR-KM-004**: Content Processing Pipeline
+- The system SHALL extract text content from various file formats
+- The system SHALL perform language-aware parsing for source code
+- The system SHALL generate appropriate chunks for vector embedding
+- The system SHALL handle binary files with metadata extraction
+- The system SHALL support custom content processors for specialized formats
+- The system SHALL maintain content lineage and source traceability
+
+### Non-Functional Requirements
+
+**NFR-KM-001**: Performance
+- Content indexing SHALL complete within 10 seconds per MB of content
+- Search queries SHALL return results within 500ms for typical repositories
+- The system SHALL support repositories up to 10GB in size
+- Memory usage SHALL not exceed 512MB during normal operations
+- Concurrent search operations SHALL maintain sub-second response times
+
+**NFR-KM-002**: Storage Efficiency
+- Vector storage SHALL use compression to minimize disk usage
+- Index files SHALL be stored in single-file databases when possible
+- The system SHALL support incremental updates without full re-indexing
+- Storage overhead SHALL not exceed 50% of original content size
+- Old index versions SHALL be automatically cleaned up
+
+**NFR-KM-003**: Reliability
+- The system SHALL recover gracefully from corrupted index files
+- Indexing operations SHALL be atomic to prevent partial states
+- The system SHALL validate index integrity on startup
+- Content updates SHALL be reflected in search results within 60 seconds
+- The system SHALL handle file system changes during indexing
+
+### Embedded Vector Database Selection
+
+Based on comprehensive research of embedded vector database solutions, the following options provide the best balance of performance, ease of integration, and maintenance overhead:
+
+#### Primary Recommendation: SQLite with sqlite-vec
+
+**Rationale:**
+- True embedded solution with single-file storage
+- Zero external dependencies or services
+- Excellent performance for moderate-scale operations (up to 10M vectors)
+- Native Go bindings available through CGO
+- SQL interface enables complex queries and metadata filtering
+- Battle-tested SQLite reliability and ACID compliance
+
+**Implementation Details:**
+```go
+type SQLiteVectorStore struct {
+    db       *sql.DB
+    vectorDim int
+    embeddingModel string
+}
+
+// Vector storage schema
+CREATE TABLE vectors (
+    id INTEGER PRIMARY KEY,
+    content_id TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    chunk_index INTEGER NOT NULL,
+    embedding BLOB NOT NULL,
+    content_text TEXT NOT NULL,
+    metadata JSON,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+// Spatial index for vector similarity
+CREATE VIRTUAL TABLE vector_index USING vec0(
+    embedding float[1536]  -- OpenAI ada-002 dimensions
+);
+```
+
+#### Alternative: ChromeM-Go (Pure Go Implementation)
+
+**Use Case:** When CGO dependencies are not acceptable or cross-compilation is required.
+
+**Features:**
+- Zero external dependencies
+- Pure Go implementation
+- Chroma-compatible API
+- In-memory operation with optional persistence
+- Simpler deployment and distribution
+
+```go
+import "github.com/philippgille/chromem-go"
+
+type ChromeGoStore struct {
+    db *chromem.DB
+}
+
+func (c *ChromeGoStore) AddDocuments(docs []Document) error {
+    for _, doc := range docs {
+        err := c.db.AddDocument(chromem.Document{
+            ID:       doc.ID,
+            Content:  doc.Content,
+            Metadata: doc.Metadata,
+        })
+        if err != nil {
+            return err
+        }
+    }
+    return nil
+}
+```
+
+#### Performance Benchmarks
+
+Based on research findings, expected performance characteristics:
+
+| Database Solution | QPS (Queries/Second) | Latency (ms) | Memory Usage | Disk Usage |
+|-------------------|---------------------|---------------|--------------|------------|
+| sqlite-vec        | 800-1200           | 1.5-3.0      | 256MB        | Compressed |
+| ChromeM-Go        | 500-800            | 2.0-4.0      | 512MB        | Uncompressed |
+| pgvector (embedded)| 1000-1500         | 1.0-2.0      | 384MB        | Compressed |
+
+### Embedding Model Integration
+
+#### Local Embedding Models (Recommended)
+
+**FR-KM-005**: Local Embedding Generation
+- The system SHALL support local embedding models to ensure privacy and reduce API dependencies
+- The system SHALL integrate with Ollama for running embedding models locally
+- The system SHALL support multiple embedding models for different content types
+- The system SHALL cache embeddings to avoid recomputation
+- The system SHALL support both CPU and GPU acceleration when available
+
+**Supported Local Models:**
+```yaml
+embedding_models:
+  text:
+    model: "ollama:nomic-embed-text"
+    dimensions: 768
+    max_tokens: 8192
+    use_case: ["documentation", "source_code", "text_files"]
+  
+  code:
+    model: "ollama:codellama:7b-code"
+    dimensions: 4096
+    max_tokens: 16384
+    use_case: ["source_code", "configuration"]
+  
+  multilingual:
+    model: "ollama:multilingual-e5-large"
+    dimensions: 1024
+    max_tokens: 512
+    use_case: ["documentation", "comments", "international_content"]
+```
+
+#### Cloud Embedding Models (Fallback)
+
+**Cloud Model Configuration:**
+```go
+type EmbeddingConfig struct {
+    Provider     string `yaml:"provider"`     // "openai", "cohere", "huggingface"
+    Model        string `yaml:"model"`        // "text-embedding-3-small"
+    APIKey       string `yaml:"api_key"`      // Environment variable reference
+    Dimensions   int    `yaml:"dimensions"`   // 1536 for OpenAI ada-002
+    BatchSize    int    `yaml:"batch_size"`   // For batch processing
+    RateLimit    int    `yaml:"rate_limit"`   // Requests per minute
+}
+```
+
+### Content Processing Pipeline
+
+#### File Type Processors
+
+**Text-Based Content:**
+```go
+type ContentProcessor interface {
+    CanProcess(filePath string) bool
+    Extract(filePath string) ([]ContentChunk, error)
+    GetContentType() ContentType
+}
+
+type MarkdownProcessor struct{}
+func (p *MarkdownProcessor) Extract(filePath string) ([]ContentChunk, error) {
+    content, err := ioutil.ReadFile(filePath)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Parse markdown structure
+    parser := goldmark.New()
+    doc := parser.Parse(text.NewReader(content))
+    
+    chunks := make([]ContentChunk, 0)
+    // Split by headers, maintain structure
+    // Each chunk contains heading context + content
+    
+    return chunks, nil
+}
+
+type SourceCodeProcessor struct{}
+func (p *SourceCodeProcessor) Extract(filePath string) ([]ContentChunk, error) {
+    // Language-aware parsing
+    // Function/class level chunking
+    // Include docstrings and comments
+    // Maintain syntax context
+}
+```
+
+**Binary Content (OCR for Images):**
+```go
+type ImageProcessor struct {
+    ocrEngine OCREngine
+}
+
+func (p *ImageProcessor) Extract(filePath string) ([]ContentChunk, error) {
+    // Use tesseract or similar for OCR
+    // Extract text from design files, diagrams
+    // Include image metadata
+}
+```
+
+#### Chunking Strategy
+
+**Smart Chunking Algorithm:**
+```go
+type ChunkingStrategy struct {
+    MaxTokens     int    // 512 tokens default
+    OverlapTokens int    // 50 tokens overlap
+    RespectBoundaries bool // Don't split sentences/functions
+}
+
+func (s *ChunkingStrategy) ChunkContent(content string, contentType ContentType) []ContentChunk {
+    switch contentType {
+    case ContentTypeMarkdown:
+        return s.chunkMarkdown(content)
+    case ContentTypeSourceCode:
+        return s.chunkSourceCode(content)
+    case ContentTypePlainText:
+        return s.chunkPlainText(content)
+    }
+}
+```
+
+### Search and Retrieval
+
+#### Hybrid Search Implementation
+
+**FR-KM-006**: Hybrid Search
+- The system SHALL combine vector similarity with keyword search
+- The system SHALL weight results based on content type and recency
+- The system SHALL support metadata filtering
+- The system SHALL provide context-aware result ranking
+- The system SHALL support query expansion and synonym matching
+
+```go
+type HybridSearchEngine struct {
+    vectorStore VectorStore
+    textIndex   TextIndex  // FTS using SQLite or Bleve
+    ranker      ResultRanker
+}
+
+func (h *HybridSearchEngine) Search(query SearchQuery) (*SearchResults, error) {
+    // Vector similarity search
+    vectorResults, err := h.vectorStore.SimilaritySearch(query.Vector, query.Limit*2)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Keyword search
+    textResults, err := h.textIndex.Search(query.Text, query.Limit*2)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Combine and rank results
+    combined := h.ranker.CombineResults(vectorResults, textResults, query.Filters)
+    
+    return &SearchResults{
+        Results: combined[:min(len(combined), query.Limit)],
+        Total:   len(combined),
+    }, nil
+}
+```
+
+#### Context-Aware Retrieval
+
+**Context Enhancement:**
+```go
+type ContextualRetriever struct {
+    searchEngine HybridSearchEngine
+    contextBuilder ContextBuilder
+}
+
+func (c *ContextualRetriever) RetrieveForAgent(query string, agentContext AgentContext) (*RetrievalResult, error) {
+    // Enhance query with agent context
+    enhancedQuery := c.contextBuilder.EnhanceQuery(query, agentContext)
+    
+    // Search with context
+    results, err := c.searchEngine.Search(enhancedQuery)
+    if err != nil {
+        return nil, err
+    }
+    
+    // Format results for agent consumption
+    formatted := c.formatForAgent(results, agentContext)
+    
+    return &RetrievalResult{
+        Context:     formatted,
+        Sources:     extractSources(results),
+        Confidence: calculateConfidence(results),
+    }, nil
+}
+```
+
+### CLI Integration
+
+#### Content Management Commands
+
+```bash
+# Initialize knowledge base
+agent knowledge init [--path <repository_path>]
+
+# Index content
+agent knowledge index [--incremental] [--content-types <types>]
+
+# Search content
+agent knowledge search "query text" [--content-type <type>] [--limit <n>]
+
+# Show index status
+agent knowledge status
+
+# Rebuild index
+agent knowledge rebuild [--force]
+
+# Export/import knowledge base
+agent knowledge export --output <file>
+agent knowledge import --input <file>
+
+# Configure embedding models
+agent knowledge config embedding --model <model> --provider <provider>
+```
+
+#### Configuration Integration
+
+**Agentfile Knowledge Configuration:**
+```yaml
+agents:
+  - name: coding-agent:v1
+    model: claude-4-sonnet
+    mode: chat
+    knowledge:
+      enabled: true
+      auto_index: true
+      content_types: ["source_code", "documentation", "configuration"]
+      embedding_model: "ollama:nomic-embed-text"
+      search_strategy: "hybrid"
+      max_context_chunks: 10
+      chunk_overlap: 50
+      filters:
+        file_patterns: ["*.md", "*.go", "*.yaml", "*.json"]
+        exclude_patterns: ["vendor/", "node_modules/", ".git/"]
+      retrieval:
+        similarity_threshold: 0.7
+        max_results: 20
+        context_window: 2048
+```
+
+### Implementation Roadmap
+
+#### Phase 1: Foundation (2-3 weeks)
+- [ ] Implement SQLite with sqlite-vec integration
+- [ ] Create basic content processors for text and markdown
+- [ ] Develop chunking algorithms
+- [ ] Implement basic vector storage and retrieval
+- [ ] Create CLI commands for knowledge management
+
+#### Phase 2: Enhanced Processing (2-3 weeks)
+- [ ] Add source code processor with language awareness
+- [ ] Implement OCR for image processing
+- [ ] Add support for PDF and other binary formats
+- [ ] Develop incremental indexing system
+- [ ] Integrate with local embedding models (Ollama)
+
+#### Phase 3: Search and Retrieval (2 weeks)
+- [ ] Implement hybrid search combining vector and text search
+- [ ] Add context-aware result ranking
+- [ ] Develop query enhancement and expansion
+- [ ] Implement result formatting for agent consumption
+- [ ] Add performance optimization and caching
+
+#### Phase 4: Integration and Polish (1-2 weeks)
+- [ ] Integrate knowledge system with agent runtime
+- [ ] Add Agentfile configuration support
+- [ ] Implement monitoring and metrics
+- [ ] Add comprehensive testing
+- [ ] Performance tuning and optimization
+
+### Security and Privacy Considerations
+
+**FR-KM-007**: Data Security
+- The system SHALL encrypt sensitive content at rest
+- The system SHALL support content access controls
+- The system SHALL not transmit content to external services without explicit consent
+- The system SHALL provide audit logging for content access
+- The system SHALL support content redaction for sensitive information
+
+**Privacy-First Design:**
+- Local embedding generation prevents data leakage
+- On-device storage ensures content privacy
+- No external service dependencies for core functionality
+- User control over content sharing and transmission
+
+### Monitoring and Metrics
+
+**Key Performance Indicators:**
+- Index freshness (time since last update)
+- Search response times (p50, p95, p99)
+- Embedding generation throughput
+- Storage utilization and growth rate
+- Search result relevance scores
+- Agent knowledge utilization rates
+
+**Monitoring Dashboard:**
+```go
+type KnowledgeMetrics struct {
+    IndexStats struct {
+        TotalDocuments   int       `json:"total_documents"`
+        TotalChunks      int       `json:"total_chunks"`
+        LastIndexed      time.Time `json:"last_indexed"`
+        IndexSize        int64     `json:"index_size_bytes"`
+    } `json:"index_stats"`
+    
+    SearchMetrics struct {
+        QueriesPerMinute float64 `json:"queries_per_minute"`
+        AvgResponseTime  float64 `json:"avg_response_time_ms"`
+        CacheHitRate     float64 `json:"cache_hit_rate"`
+    } `json:"search_metrics"`
+    
+    EmbeddingMetrics struct {
+        GenerationRate   float64 `json:"embeddings_per_second"`
+        ModelUtilization float64 `json:"model_utilization"`
+        QueueDepth       int     `json:"queue_depth"`
+    } `json:"embedding_metrics"`
+}
+```
+
+This content indexing and knowledge management system provides agents with powerful information retrieval capabilities while maintaining privacy and reducing external dependencies through embedded solutions. The implementation prioritizes local-first operation with cloud fallbacks, ensuring robust operation across various deployment environments.
+
 ## OTA Updates
 
 The `agent update` command provides secure over-the-air updates for the agent binary.
