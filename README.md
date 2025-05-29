@@ -1,3 +1,7 @@
+[![CI](https://github.com/geoffjay/agent/actions/workflows/ci.yml/badge.svg)](https://github.com/geoffjay/agent/actions/workflows/ci.yml) [![Coverage Status](https://coveralls.io/repos/github/geoffjay/agent/badge.svg?branch=index-research)](https://coveralls.io/github/geoffjay/agent?branch=index-research)
+
+---
+
 # Agent
 
 > **An autonomous agent framework for seamless AI-developer collaboration** 🤖✨
